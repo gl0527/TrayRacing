@@ -10,7 +10,7 @@ typedef struct Material {
     float shininess;
 } Material;
 
-static Vec3 shade(Material material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
+static Vec3 shade(Material *material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
 {
     Vec3 outRadiance = {0.0f, 0.0f, 0.0f};
     float const NdotL = dot(normal, toLight);
@@ -18,7 +18,7 @@ static Vec3 shade(Material material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3
     {
         return outRadiance;
     }
-    outRadiance = mulf(NdotL, mul(inRadiance, material.diffuse));
+    outRadiance = mulf(NdotL, mul(inRadiance, material->diffuse));
     Vec3 const halfway = norm(add(toEye, toLight));
     float const NdotH = dot(normal, halfway);
     if (NdotH < 0)
@@ -26,7 +26,7 @@ static Vec3 shade(Material material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3
         return outRadiance;
     }
 
-    return add(outRadiance, mulf(powf(NdotH, material.shininess), mul(inRadiance, material.specular)));
+    return add(outRadiance, mulf(powf(NdotH, material->shininess), mul(inRadiance, material->specular)));
 }
 
 #endif

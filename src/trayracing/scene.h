@@ -71,7 +71,7 @@ static Vec3 trace(Scene *const scene, Ray ray)
         return scene->ambientLight;
     }
 
-    Vec3 outRadiance = mul(hit.material.ambient, scene->ambientLight);
+    Vec3 outRadiance = mul(hit.material->ambient, scene->ambientLight);
 
     for (uint8_t i = 0; i < scene->currentLightCount; ++i)
     {
