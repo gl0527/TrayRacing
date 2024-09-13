@@ -9,7 +9,7 @@
 typedef struct Sphere {
     Vec3 center;
     float radius;
-    Material *material;
+    Material const *material;
 } Sphere;
 
 static Hit intersect(Sphere sphere, Ray ray)

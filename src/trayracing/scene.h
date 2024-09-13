@@ -48,7 +48,7 @@ static void addLight(Scene *const scene, Light light)
     }
 }
 
-static Hit firstIntersect(Scene *const scene, Ray ray)
+static Hit firstIntersect(Scene const *const scene, Ray ray)
 {
     Hit bestHit;
     bestHit.t = -1.0f;
@@ -64,7 +64,7 @@ static Hit firstIntersect(Scene *const scene, Ray ray)
     return bestHit;
 }
 
-static Vec3 trace(Scene *const scene, Ray ray)
+static Vec3 trace(Scene const *const scene, Ray ray)
 {
     Hit hit = firstIntersect(scene, ray);
     if (hit.t < 0) {
@@ -81,7 +81,7 @@ static Vec3 trace(Scene *const scene, Ray ray)
     return outRadiance;
 }
 
-static void render(Scene *const scene, Vec3 *const image, uint32_t imageWidth, uint32_t imageHeight)
+static void render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, uint32_t imageHeight)
 {
     for (uint32_t y = 0; y < imageHeight; ++y)
     {

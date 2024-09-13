@@ -8,7 +8,7 @@ typedef struct Hit {
     float t;
     Vec3 position;
     Vec3 normal;
-    Material *material;
+    Material const *material;
 } Hit;
 
 #endif

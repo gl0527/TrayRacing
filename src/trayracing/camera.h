@@ -20,7 +20,7 @@ static void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fo
     camera->up = mulf(windowSize, norm(cross(w, camera->right)));
 }
 
-static Ray GetRay(Camera *const camera, int x, int y, int screenWidth, int screenHeight)
+static Ray GetRay(Camera const *const camera, int x, int y, int screenWidth, int screenHeight)
 {
     Vec3 const dir = sub(add(add(camera->lookat, mulf((2.0f * (x + 0.5f) / screenWidth - 1), camera->right)), mulf((2.0f * (y + 0.5f) / screenHeight - 1), camera->up)), camera->eye);
     Ray const ray = {.origin = camera->eye, .direction = norm(dir)};

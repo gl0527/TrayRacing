@@ -10,7 +10,7 @@ typedef struct Material {
     float shininess;
 } Material;
 
-static Vec3 shade(Material *material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
+static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
 {
     Vec3 outRadiance = {0.0f, 0.0f, 0.0f};
     float const NdotL = dot(normal, toLight);
