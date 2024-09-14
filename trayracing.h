@@ -133,32 +133,27 @@ TRAYRACING_DECL void render(Scene const *const scene, Vec3 *const image, uint32_
 
 Vec3 inv(Vec3 a)
 {
-    Vec3 ret = {-a.x, -a.y, -a.z};
-    return ret;
+    return (Vec3){-a.x, -a.y, -a.z};
 }
 
 Vec3 add(Vec3 a, Vec3 b)
 {
-    Vec3 ret = {a.x + b.x, a.y + b.y, a.z + b.z};
-    return ret;
+    return (Vec3){a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
 Vec3 sub(Vec3 a, Vec3 b)
 {
-    Vec3 ret = {a.x - b.x, a.y - b.y, a.z - b.z};
-    return ret;
+    return (Vec3){a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
 Vec3 mulf(float f, Vec3 a)
 {
-    Vec3 ret = {f * a.x, f * a.y, f * a.z };
-    return ret;
+    return (Vec3){f * a.x, f * a.y, f * a.z };
 }
 
 Vec3 mul(Vec3 a, Vec3 b)
 {
-    Vec3 ret = {a.x * b.x, a.y * b.y, a.z * b.z};
-    return ret;
+    return (Vec3){a.x * b.x, a.y * b.y, a.z * b.z};
 }
 
 float dot(Vec3 a, Vec3 b)
@@ -168,8 +163,9 @@ float dot(Vec3 a, Vec3 b)
 
 Vec3 cross(Vec3 a, Vec3 b)
 {
-    Vec3 ret = {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
-    return ret;
+    return (Vec3){  a.y * b.z - a.z * b.y,
+                    a.z * b.x - a.x * b.z,
+                    a.x * b.y - a.y * b.x};
 }
 
 float lengthSqr(Vec3 a)
