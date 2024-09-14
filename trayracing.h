@@ -108,7 +108,7 @@ TRAYRACING_DECL Ray GetRay(Camera const *const camera, int x, int y, int screenW
 
 TRAYRACING_DECL Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance);
 
-TRAYRACING_DECL Hit intersect(Sphere sphere, Ray ray);
+TRAYRACING_DECL Hit intersect(Sphere sphere, Ray const *const ray);
 
 TRAYRACING_DECL void set(ResourcePool *const pResourcePool);
 TRAYRACING_DECL void addMaterial(ResourcePool *const pResourcePool, Material material);
@@ -116,8 +116,8 @@ TRAYRACING_DECL void addMaterial(ResourcePool *const pResourcePool, Material mat
 TRAYRACING_DECL Scene create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La);
 TRAYRACING_DECL void addSphere(Scene *const scene, Sphere sphere);
 TRAYRACING_DECL void addLight(Scene *const scene, Light light);
-TRAYRACING_DECL Hit firstIntersect(Scene const *const scene, Ray ray);
-TRAYRACING_DECL Vec3 trace(Scene const *const scene, Ray ray);
+TRAYRACING_DECL Hit firstIntersect(Scene const *const scene, Ray const *const ray);
+TRAYRACING_DECL Vec3 trace(Scene const *const scene, Ray const *const ray);
 TRAYRACING_DECL void render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, uint32_t imageHeight);
 
 #ifdef __cplusplus
@@ -236,13 +236,13 @@ Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight
     return add(outRadiance, mulf(powf(NdotH, material->shininess), mul(inRadiance, material->specular)));
 }
 
-Hit intersect(Sphere sphere, Ray ray)
+Hit intersect(Sphere sphere, Ray const *const ray)
 {
     Hit hit;
     hit.t = -1.0f;
 
-    Vec3 const dist = sub(ray.origin, sphere.center);
-    float const b = dot(dist, ray.direction) * 2;
+    Vec3 const dist = sub(ray->origin, sphere.center);
+    float const b = dot(dist, ray->direction) * 2;
     float const c = lengthSqr(dist) - sphere.radius * sphere.radius;
 
     float const disc = b * b - 4 * c;
@@ -258,7 +258,7 @@ Hit intersect(Sphere sphere, Ray ray)
     }
 
     hit.t = t2 > PRECISION ? t2 * 0.5f : t1 * 0.5f;
-    hit.position = add(ray.origin, mulf(hit.t, ray.direction));
+    hit.position = add(ray->origin, mulf(hit.t, ray->direction));
     hit.normal = mulf(1.0f / sphere.radius, sub(hit.position, sphere.center));
     hit.material = sphere.material;
 
@@ -306,7 +306,7 @@ void addLight(Scene *const scene, Light light)
     }
 }
 
-Hit firstIntersect(Scene const *const scene, Ray ray)
+Hit firstIntersect(Scene const *const scene, Ray const *const ray)
 {
     Hit bestHit;
     bestHit.t = -1.0f;
@@ -322,7 +322,7 @@ Hit firstIntersect(Scene const *const scene, Ray ray)
     return bestHit;
 }
 
-Vec3 trace(Scene const *const scene, Ray ray)
+Vec3 trace(Scene const *const scene, Ray const *const ray)
 {
     Hit hit = firstIntersect(scene, ray);
     if (hit.t < 0) {
@@ -333,7 +333,7 @@ Vec3 trace(Scene const *const scene, Ray ray)
 
     for (uint8_t i = 0; i < scene->currentLightCount; ++i)
     {
-        outRadiance = add(outRadiance, shade(hit.material, hit.normal, inv(ray.direction), scene->lights[i].direction, scene->lights[i].exitance));
+        outRadiance = add(outRadiance, shade(hit.material, hit.normal, inv(ray->direction), scene->lights[i].direction, scene->lights[i].exitance));
     }
 
     return outRadiance;
@@ -345,7 +345,8 @@ void render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, ui
     {
         for (uint32_t x = 0; x < imageWidth; ++x)
         {
-            image[y * imageWidth + x] = trace(scene, GetRay(&(scene->camera), x, y, imageWidth, imageHeight));
+            Ray const ray = GetRay(&(scene->camera), x, y, imageWidth, imageHeight);
+            image[y * imageWidth + x] = trace(scene, &ray);
         }
     }
 }
