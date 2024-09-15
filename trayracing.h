@@ -192,7 +192,11 @@ Vec3 reflect(Vec3 n, Vec3 v)
 
 Vec3 refract(Vec3 n, Vec3 i)
 {	
-    return add(mulf((1.0f/n.x), i),  mulf((dot(n, i) / n.x - sqrtf(1.0f - (1.0f - powf(dot(n, i), 2)) / (n.x * n.x))), n));
+    float const cosa = dot(n, i);
+    float const num = 1.0f - cosa * cosa;
+    float const disc = 1.0f - num / (n.x * n.x);
+
+    return add(mulf(1.0f / n.x, i), mulf(cosa / n.x - sqrtf(disc), n));
 }
 
 void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov)
@@ -208,9 +212,7 @@ void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov)
 Ray GetRay(Camera const *const camera, int x, int y, int screenWidth, int screenHeight)
 {
     Vec3 const dir = sub(add(add(camera->lookat, mulf((2.0f * (x + 0.5f) / screenWidth - 1), camera->right)), mulf((2.0f * (y + 0.5f) / screenHeight - 1), camera->up)), camera->eye);
-    Ray const ray = {.origin = camera->eye, .direction = norm(dir)};
-
-    return ray;
+    return (Ray){.origin = camera->eye, .direction = norm(dir)};
 }
 
 Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
@@ -249,14 +251,12 @@ Hit intersect(Sphere const *const sphere, Ray const *const ray)
     float const sqrt_disc = sqrtf(disc);
     float const t1 = -b + sqrt_disc;
     float const t2 = -b - sqrt_disc;
-    if (t1 < PRECISION) {
-        return hit;
+    if (t1 > PRECISION) {
+        hit.t = t2 > PRECISION ? t2 * 0.5f : t1 * 0.5f;
+        hit.position = add(ray->origin, mulf(hit.t, ray->direction));
+        hit.normal = mulf(1.0f / sphere->radius, sub(hit.position, sphere->center));
+        hit.material = sphere->material;
     }
-
-    hit.t = t2 > PRECISION ? t2 * 0.5f : t1 * 0.5f;
-    hit.position = add(ray->origin, mulf(hit.t, ray->direction));
-    hit.normal = mulf(1.0f / sphere->radius, sub(hit.position, sphere->center));
-    hit.material = sphere->material;
 
     return hit;
 }
