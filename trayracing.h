@@ -250,8 +250,8 @@ Hit intersect(Sphere const *const sphere, Ray const *const ray)
 
     float const sqrt_disc = sqrtf(disc);
     float const t1 = -b + sqrt_disc;
-    float const t2 = -b - sqrt_disc;
     if (t1 > PRECISION) {
+        float const t2 = -b - sqrt_disc;
         hit.t = t2 > PRECISION ? t2 * 0.5f : t1 * 0.5f;
         hit.position = add(ray->origin, mulf(hit.t, ray->direction));
         hit.normal = mulf(1.0f / sphere->radius, sub(hit.position, sphere->center));
