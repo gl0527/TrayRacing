@@ -77,7 +77,7 @@ typedef struct ResourcePool {
 } ResourcePool;
 
 typedef struct Scene {
-    enum {MAX_SPHERE_COUNT = 10, MAX_LIGHT_COUNT = 4} sizes;
+    enum {MAX_SPHERE_COUNT = 128, MAX_LIGHT_COUNT = 4} sizes;
     uint8_t currentSphereCount;
     uint8_t currentLightCount;
     Sphere spheres[MAX_SPHERE_COUNT];
