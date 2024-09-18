@@ -329,7 +329,7 @@ Vec3 trace(Scene const *const scene, Ray const *const ray)
 
     for (uint8_t i = 0; i < scene->currentLightCount; ++i)
     {
-        outRadiance = add(outRadiance, shade(hit.material, hit.normal, inv(ray->direction), scene->lights[i].direction, scene->lights[i].exitance));
+        outRadiance = add(outRadiance, shade(hit.material, hit.normal, inv(ray->direction), inv(scene->lights[i].direction), scene->lights[i].exitance));
     }
 
     return outRadiance;
