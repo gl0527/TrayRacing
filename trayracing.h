@@ -329,7 +329,13 @@ Vec3 trace(Scene const *const scene, Ray const *const ray)
 
     for (uint8_t i = 0; i < scene->currentLightCount; ++i)
     {
-        outRadiance = add(outRadiance, shade(hit.material, hit.normal, inv(ray->direction), inv(scene->lights[i].direction), scene->lights[i].exitance));
+        Vec3 const toLight = inv(scene->lights[i].direction);
+        Ray const shadowRay = {.origin = add(hit.position, mulf(1000.0f * PRECISION, hit.normal)), .direction = toLight };
+        Hit const shadowHit = firstIntersect(scene, &shadowRay);
+        if (shadowHit.t < 0)
+        {
+            outRadiance = add(outRadiance, shade(hit.material, hit.normal, inv(ray->direction), toLight, scene->lights[i].exitance));
+        }
     }
 
     return outRadiance;
