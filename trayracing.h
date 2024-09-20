@@ -100,6 +100,7 @@ TRAYRACING_DECL Vec3 cross(Vec3 a, Vec3 b);
 TRAYRACING_DECL float lengthSqr(Vec3 a);
 TRAYRACING_DECL float length(Vec3 a);
 TRAYRACING_DECL Vec3 norm(Vec3 a);
+TRAYRACING_DECL float dist(Vec3 a, Vec3 b);
 TRAYRACING_DECL Vec3 reflect(Vec3 n, Vec3 v);
 TRAYRACING_DECL Vec3 refract(Vec3 n, Vec3 i);
 
@@ -183,6 +184,11 @@ Vec3 norm(Vec3 a)
     float const len = length(a);
 
     return (len > PRECISION) ? mulf(1.0f / len, a) : a;
+}
+
+float dist(Vec3 a, Vec3 b)
+{
+    return length(sub(b, a));
 }
 
 Vec3 reflect(Vec3 n, Vec3 v) 
