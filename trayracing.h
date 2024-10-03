@@ -102,7 +102,7 @@ TRAYRACING_DECL float length(Vec3 a);
 TRAYRACING_DECL Vec3 norm(Vec3 a);
 TRAYRACING_DECL float dist(Vec3 a, Vec3 b);
 TRAYRACING_DECL Vec3 reflect(Vec3 n, Vec3 v);
-TRAYRACING_DECL Vec3 refract(Vec3 n, Vec3 i);
+TRAYRACING_DECL Vec3 refract(Vec3 n, Vec3 i, Vec3 refrIdx);
 
 TRAYRACING_DECL void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov);
 TRAYRACING_DECL Ray GetRay(Camera const *const camera, int x, int y, int screenWidth, int screenHeight);
@@ -196,13 +196,29 @@ Vec3 reflect(Vec3 n, Vec3 v)
     return sub(v, mulf(2.0f,  mulf(dot(n, v),  n)));
 }
 
-Vec3 refract(Vec3 n, Vec3 i)
-{	
-    float const cosa = dot(n, i);
+Vec3 refract(Vec3 n, Vec3 i, Vec3 refrIdx)
+{
+    float cosa = dot(n, i);
+    if (cosa > 0) {
+        cosa = -cosa;
+        n = inv(n);
+        refrIdx.x = 1.0f / refrIdx.x;
+        refrIdx.y = 1.0f / refrIdx.y;
+        refrIdx.z = 1.0f / refrIdx.z;
+    }
     float const num = 1.0f - cosa * cosa;
-    float const disc = 1.0f - num / (n.x * n.x);
+    float const discX = 1.0f - num / (refrIdx.x * refrIdx.x);
+    float const discY = 1.0f - num / (refrIdx.y * refrIdx.y);
+    float const discZ = 1.0f - num / (refrIdx.z * refrIdx.z);
+    if (discX < 0.0f || discY < 0.0f || discZ < 0.0f)
+    {
+        return reflect(n, i);
+    }
 
-    return add(mulf(1.0f / n.x, i), mulf(cosa / n.x - sqrtf(disc), n));
+    return add(add(
+                add(mulf(1.0f / refrIdx.x, i), mulf(cosa / refrIdx.x - sqrtf(discX), n)),
+                add(mulf(1.0f / refrIdx.y, i), mulf(cosa / refrIdx.y - sqrtf(discY), n))),
+                add(mulf(1.0f / refrIdx.z, i), mulf(cosa / refrIdx.z - sqrtf(discZ), n)));
 }
 
 void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov)
