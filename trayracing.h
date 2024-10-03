@@ -105,7 +105,7 @@ TRAYRACING_DECL Vec3 reflect(Vec3 n, Vec3 v);
 TRAYRACING_DECL Vec3 refract(Vec3 n, Vec3 i, Vec3 refrIdx);
 
 TRAYRACING_DECL void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov);
-TRAYRACING_DECL Ray GetRay(Camera const *const camera, int x, int y, int screenWidth, int screenHeight);
+TRAYRACING_DECL Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight);
 
 TRAYRACING_DECL Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance);
 
@@ -231,7 +231,7 @@ void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov)
     camera->up = mulf(windowSize, norm(cross(w, camera->right)));
 }
 
-Ray GetRay(Camera const *const camera, int x, int y, int screenWidth, int screenHeight)
+Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight)
 {
     Vec3 const dir = sub(add(add(camera->lookat, mulf((2.0f * (x + 0.5f) / screenWidth - 1), camera->right)), mulf((2.0f * (y + 0.5f) / screenHeight - 1), camera->up)), camera->eye);
     return (Ray){.origin = camera->eye, .direction = norm(dir)};
