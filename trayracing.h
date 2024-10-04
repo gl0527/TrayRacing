@@ -27,6 +27,8 @@
 #define RAD2DEG (180.0f/M_PIf)
 #endif
 
+#define BIT(n) (1ULL << (n))
+
 typedef struct Vec3 {
     float x;
     float y;
@@ -50,11 +52,35 @@ typedef struct Camera {
     Vec3 up;
 } Camera;
 
-typedef struct Material {
+typedef enum MaterialType
+{
+    MT_ROUGH,
+    MT_SMOOTH
+} MaterialType;
+
+typedef enum SmoothMaterialAttribute
+{
+    SMTA_REFLECTIVE = BIT(0),
+    SMTA_REFRACTIVE = BIT(1)
+} SmoothMaterialAttribute;
+
+typedef struct Material
+{
+    MaterialType type;
     Vec3 ambient;
-    Vec3 diffuse;
-    Vec3 specular;
-    float shininess;
+    union {
+        struct {
+            Vec3 diffuse;
+            Vec3 specular;
+            float shininess;
+        };
+        struct {
+            Vec3 minReflectance;
+            Vec3 refrIdx;
+            Vec3 absorpCoeff;
+            uint8_t attributeMask;
+        };
+    };
 } Material;
 
 typedef struct Hit {
@@ -107,6 +133,8 @@ TRAYRACING_DECL Vec3 refract(Vec3 n, Vec3 i, Vec3 refrIdx);
 TRAYRACING_DECL void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov);
 TRAYRACING_DECL Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight);
 
+TRAYRACING_DECL void createRoughMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess);
+TRAYRACING_DECL void createSmoothMaterial(Material *const material, Vec3 ambient, Vec3 refrIdx, Vec3 absorption, uint8_t attributes);
 TRAYRACING_DECL Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance);
 
 TRAYRACING_DECL Hit intersect(Sphere const *const sphere, Ray const *const ray);
@@ -118,7 +146,7 @@ TRAYRACING_DECL Scene create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La)
 TRAYRACING_DECL void addSphere(Scene *const scene, Sphere sphere);
 TRAYRACING_DECL void addLight(Scene *const scene, Light light);
 TRAYRACING_DECL Hit firstIntersect(Scene const *const scene, Ray const *const ray);
-TRAYRACING_DECL Vec3 trace(Scene const *const scene, Ray const *const ray);
+TRAYRACING_DECL Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth);
 TRAYRACING_DECL void render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, uint32_t imageHeight);
 
 #ifdef __cplusplus
@@ -237,23 +265,63 @@ Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWi
     return (Ray){.origin = camera->eye, .direction = norm(dir)};
 }
 
+void createRoughMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess)
+{
+    material->type = MT_ROUGH;
+    material->ambient = ambient;
+    material->diffuse = diffuse;
+    material->specular = specular;
+    material->shininess = shininess;
+}
+
+void createSmoothMaterial(Material *const material, Vec3 ambient, Vec3 refrIdx, Vec3 absorpCoeff, uint8_t attributeMask)
+{
+    material->type = MT_SMOOTH;
+    material->ambient = ambient;
+    material->refrIdx = refrIdx;
+    material->absorpCoeff = absorpCoeff;
+    material->attributeMask = attributeMask;
+
+    Vec3 const white = {1.0f, 1.0f, 1.0f};
+    Vec3 const refrIdxP1 = add(refrIdx, white);
+    Vec3 const refrIdxM1 = sub(refrIdx, white);
+    Vec3 const absorpCoeff2 = mul(material->absorpCoeff, material->absorpCoeff);
+    Vec3 const num = add(mul(refrIdxM1,  refrIdxM1), absorpCoeff2);
+    Vec3 const denom = add(mul(refrIdxP1,  refrIdxP1), absorpCoeff2);
+
+    material->minReflectance = (Vec3){num.x / denom.x, num.y / denom.y, num.z / denom.z};
+}
+
 Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
 {
-    Vec3 outRadiance = {0.0f, 0.0f, 0.0f};
-    float const NdotL = dot(normal, toLight);
-    if (NdotL < 0)
+    switch (material->type)
     {
-        return outRadiance;
-    }
-    outRadiance = mulf(NdotL, mul(inRadiance, material->diffuse));
-    Vec3 const halfway = norm(add(toEye, toLight));
-    float const NdotH = dot(normal, halfway);
-    if (NdotH < 0)
-    {
-        return outRadiance;
-    }
+        case MT_ROUGH:
+            {
+                Vec3 outRadiance = {0.0f, 0.0f, 0.0f};
+                float const NdotL = dot(normal, toLight);
+                if (NdotL < 0)
+                {
+                    return outRadiance;
+                }
+                outRadiance = mulf(NdotL, mul(inRadiance, material->diffuse));
+                Vec3 const halfway = norm(add(toEye, toLight));
+                float const NdotH = dot(normal, halfway);
+                if (NdotH < 0)
+                {
+                    return outRadiance;
+                }
 
-    return add(outRadiance, mulf(powf(NdotH, material->shininess), mul(inRadiance, material->specular)));
+                return add(outRadiance, mulf(powf(NdotH, material->shininess), mul(inRadiance, material->specular)));
+            }
+        case MT_SMOOTH:
+            {
+                float const cosa = fabsf(dot(normal, toEye));
+                Vec3 const white = {1.0f, 1.0f, 1.0f};
+
+                return add(material->minReflectance, mulf(powf(1.0f - cosa, 5), sub(white, material->minReflectance)));
+            }
+    }
 }
 
 Hit intersect(Sphere const *const sphere, Ray const *const ray)
@@ -330,7 +398,7 @@ Hit firstIntersect(Scene const *const scene, Ray const *const ray)
     bestHit.t = -1.0f;
     for (uint8_t i = 0; i < scene->currentSphereCount; ++i)
     {
-        Hit hit = intersect(&(scene->spheres[i]), ray);
+        Hit const hit = intersect(&(scene->spheres[i]), ray);
         if (hit.t > 0 && (bestHit.t < 0 || hit.t < bestHit.t))
         {
             bestHit = hit;
@@ -340,24 +408,65 @@ Hit firstIntersect(Scene const *const scene, Ray const *const ray)
     return bestHit;
 }
 
-Vec3 trace(Scene const *const scene, Ray const *const ray)
+Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
 {
-    Hit hit = firstIntersect(scene, ray);
-    if (hit.t < 0) {
+    if (depth > 3)
+    {
+        return scene->ambientLight;
+    }
+
+    Hit const hit = firstIntersect(scene, ray);
+    if (hit.t < 0)
+    {
         return scene->ambientLight;
     }
 
     Vec3 outRadiance = mul(hit.material->ambient, scene->ambientLight);
+    Vec3 const viewDir = inv(ray->direction);
 
-    for (uint8_t i = 0; i < scene->currentLightCount; ++i)
+    switch(hit.material->type)
     {
-        Vec3 const toLight = inv(scene->lights[i].direction);
-        Ray const shadowRay = {.origin = add(hit.position, mulf(1000.0f * PRECISION, hit.normal)), .direction = toLight };
-        Hit const shadowHit = firstIntersect(scene, &shadowRay);
-        if (shadowHit.t < 0)
-        {
-            outRadiance = add(outRadiance, shade(hit.material, hit.normal, inv(ray->direction), toLight, scene->lights[i].exitance));
-        }
+        case MT_ROUGH:
+            {
+                for (uint8_t i = 0; i < scene->currentLightCount; ++i)
+                {
+                    Vec3 const toLight = norm(inv(scene->lights[i].direction));
+                    Ray const shadowRay = {
+                        .origin = add(hit.position, mulf(1e-3f, toLight)),
+                        .direction = toLight
+                    };
+                    Hit const shadowHit = firstIntersect(scene, &shadowRay);
+                    if (shadowHit.t < 0)
+                    {
+                        outRadiance = add(outRadiance, shade(hit.material, hit.normal, viewDir, toLight, scene->lights[i].exitance));
+                    }
+                }
+            }
+            break;
+        case MT_SMOOTH:
+            {
+                Vec3 const reflectance = shade(hit.material, hit.normal, viewDir, (Vec3){0.0f ,0.0f ,0.0f}, (Vec3){0.0f, 0.0f, 0.0f});
+
+                if (hit.material->attributeMask & SMTA_REFLECTIVE)
+                {
+                    Vec3 const reflectedDirection = norm(reflect(hit.normal, ray->direction));
+                    Ray const reflectedRay = {
+                        .origin = add(hit.position, mulf(1e-3f, reflectedDirection)),
+                        .direction = reflectedDirection
+                    };
+                    outRadiance = add(outRadiance, mul(reflectance, trace(scene, &reflectedRay, depth + 1)));
+                }
+                if (hit.material->attributeMask & SMTA_REFRACTIVE)
+                {
+                    Vec3 const refractedDirection = norm(refract(hit.normal, ray->direction, hit.material->refrIdx));
+                    Ray const refractedRay = {
+                        .origin = add(hit.position, mulf(1e-3f, refractedDirection)),
+                        .direction = refractedDirection
+                    };
+                    Vec3 const white = {1.0f, 1.0f, 1.0f};
+                    outRadiance = add(outRadiance, mul(sub(white, reflectance), trace(scene, &refractedRay, depth + 1)));
+                }
+            }
     }
 
     return outRadiance;
@@ -370,7 +479,7 @@ void render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, ui
         for (uint32_t x = 0; x < imageWidth; ++x)
         {
             Ray const ray = GetRay(&(scene->camera), x, y, imageWidth, imageHeight);
-            image[y * imageWidth + x] = trace(scene, &ray);
+            image[y * imageWidth + x] = trace(scene, &ray, 0);
         }
     }
 }
