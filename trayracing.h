@@ -235,18 +235,24 @@ Vec3 refract(Vec3 n, Vec3 i, Vec3 refrIdx)
         refrIdx.z = 1.0f / refrIdx.z;
     }
     float const num = 1.0f - cosa * cosa;
-    float const discX = 1.0f - num / (refrIdx.x * refrIdx.x);
-    float const discY = 1.0f - num / (refrIdx.y * refrIdx.y);
-    float const discZ = 1.0f - num / (refrIdx.z * refrIdx.z);
+
+    float const invRefrIdxX = 1.0f / refrIdx.x;
+    float const invRefrIdxY = 1.0f / refrIdx.y;
+    float const invRefrIdxZ = 1.0f / refrIdx.z;
+
+    float const discX = 1.0f - num * invRefrIdxX * invRefrIdxX;
+    float const discY = 1.0f - num * invRefrIdxY * invRefrIdxY;
+    float const discZ = 1.0f - num * invRefrIdxZ * invRefrIdxZ;
+
     if (discX < 0.0f || discY < 0.0f || discZ < 0.0f)
     {
         return reflect(n, i);
     }
 
     return add(add(
-                add(mulf(1.0f / refrIdx.x, i), mulf(cosa / refrIdx.x - sqrtf(discX), n)),
-                add(mulf(1.0f / refrIdx.y, i), mulf(cosa / refrIdx.y - sqrtf(discY), n))),
-                add(mulf(1.0f / refrIdx.z, i), mulf(cosa / refrIdx.z - sqrtf(discZ), n)));
+                add(mulf(invRefrIdxX, i), mulf(cosa * invRefrIdxX - sqrtf(discX), n)),
+                add(mulf(invRefrIdxY, i), mulf(cosa * invRefrIdxY - sqrtf(discY), n))),
+                add(mulf(invRefrIdxZ, i), mulf(cosa * invRefrIdxZ - sqrtf(discZ), n)));
 }
 
 void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov)
