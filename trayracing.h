@@ -11,22 +11,6 @@
 #endif
 #endif
 
-#ifndef PRECISION
-#define PRECISION 1e-7f
-#endif
-
-#ifndef M_PIf
-#define M_PIf 3.141593f
-#endif
-
-#ifndef DEG2RAD
-#define DEG2RAD (M_PIf/180.0f)
-#endif
-
-#ifndef RAD2DEG
-#define RAD2DEG (180.0f/M_PIf)
-#endif
-
 #define BIT(n) (1ULL << (n))
 
 typedef struct Vec3 {
@@ -39,11 +23,6 @@ typedef struct Light {
     Vec3 direction;
     Vec3 exitance;
 } Light;
-
-typedef struct Ray {
-    Vec3 origin;
-    Vec3 direction;
-} Ray;
 
 typedef struct Camera {
     Vec3 eye;
@@ -82,13 +61,6 @@ typedef struct Material
         };
     };
 } Material;
-
-typedef struct Hit {
-    float t;
-    Vec3 position;
-    Vec3 normal;
-    Material const *material;
-} Hit;
 
 typedef struct Sphere {
     Vec3 center;
@@ -131,13 +103,9 @@ TRAYRACING_DECL Vec3 reflect(Vec3 n, Vec3 v);
 TRAYRACING_DECL Vec3 refract(Vec3 n, Vec3 i, Vec3 refrIdx);
 
 TRAYRACING_DECL void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov);
-TRAYRACING_DECL Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight);
 
 TRAYRACING_DECL void createRoughMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess);
 TRAYRACING_DECL void createSmoothMaterial(Material *const material, Vec3 ambient, Vec3 refrIdx, Vec3 absorption, uint8_t attributes);
-TRAYRACING_DECL Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance);
-
-TRAYRACING_DECL Hit intersect(Sphere const *const sphere, Ray const *const ray);
 
 TRAYRACING_DECL void set(ResourcePool *const pResourcePool);
 TRAYRACING_DECL void addMaterial(ResourcePool *const pResourcePool, Material material);
@@ -145,8 +113,6 @@ TRAYRACING_DECL void addMaterial(ResourcePool *const pResourcePool, Material mat
 TRAYRACING_DECL Scene create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La);
 TRAYRACING_DECL void addSphere(Scene *const scene, Sphere sphere);
 TRAYRACING_DECL void addLight(Scene *const scene, Light light);
-TRAYRACING_DECL Hit firstIntersect(Scene const *const scene, Ray const *const ray);
-TRAYRACING_DECL Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth);
 TRAYRACING_DECL void render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, uint32_t imageHeight);
 
 #ifdef __cplusplus
@@ -159,6 +125,34 @@ TRAYRACING_DECL void render(Scene const *const scene, Vec3 *const image, uint32_
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+
+#ifndef PRECISION
+#define PRECISION 1e-7f
+#endif
+
+#ifndef M_PIf
+#define M_PIf 3.141593f
+#endif
+
+#ifndef DEG2RAD
+#define DEG2RAD (M_PIf/180.0f)
+#endif
+
+#ifndef RAD2DEG
+#define RAD2DEG (180.0f/M_PIf)
+#endif
+
+typedef struct Ray {
+    Vec3 origin;
+    Vec3 direction;
+} Ray;
+
+typedef struct Hit {
+    float t;
+    Vec3 position;
+    Vec3 normal;
+    Material const *material;
+} Hit;
 
 Vec3 inv(Vec3 a)
 {
@@ -265,7 +259,7 @@ void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov)
     camera->up = mulf(windowSize, norm(cross(w, camera->right)));
 }
 
-Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight)
+static Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight)
 {
     Vec3 const dir = sub(add(add(camera->lookat, mulf((2.0f * (x + 0.5f) / screenWidth - 1), camera->right)), mulf((2.0f * (y + 0.5f) / screenHeight - 1), camera->up)), camera->eye);
     return (Ray){.origin = camera->eye, .direction = norm(dir)};
@@ -298,7 +292,7 @@ void createSmoothMaterial(Material *const material, Vec3 ambient, Vec3 refrIdx, 
     material->minReflectance = (Vec3){num.x / denom.x, num.y / denom.y, num.z / denom.z};
 }
 
-Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
+static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
 {
     switch (material->type)
     {
@@ -330,7 +324,7 @@ Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight
     }
 }
 
-Hit intersect(Sphere const *const sphere, Ray const *const ray)
+static Hit intersect(Sphere const *const sphere, Ray const *const ray)
 {
     Hit hit;
     hit.t = -1.0f;
@@ -398,7 +392,7 @@ void addLight(Scene *const scene, Light light)
     }
 }
 
-Hit firstIntersect(Scene const *const scene, Ray const *const ray)
+static Hit firstIntersect(Scene const *const scene, Ray const *const ray)
 {
     Hit bestHit;
     bestHit.t = -1.0f;
@@ -414,7 +408,7 @@ Hit firstIntersect(Scene const *const scene, Ray const *const ray)
     return bestHit;
 }
 
-Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
+static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
 {
     if (depth > 3)
     {
