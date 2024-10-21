@@ -268,7 +268,7 @@ void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov)
 static Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight)
 {
     Vec3 const dir = sub(add(add(camera->lookat, mulf((2.0f * (x + 0.5f) / screenWidth - 1), camera->right)), mulf((2.0f * (y + 0.5f) / screenHeight - 1), camera->up)), camera->eye);
-    return LITERAL(Ray){.origin = camera->eye, .direction = norm(dir)};
+    return LITERAL(Ray){camera->eye, norm(dir)};
 }
 
 void createRoughMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess)
@@ -437,10 +437,7 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
                 for (uint8_t i = 0; i < scene->currentLightCount; ++i)
                 {
                     Vec3 const toLight = norm(inv(scene->lights[i].direction));
-                    Ray const shadowRay = {
-                        .origin = add(hit.position, mulf(1e-3f, toLight)),
-                        .direction = toLight
-                    };
+                    Ray const shadowRay = {add(hit.position, mulf(1e-3f, toLight)), toLight};
                     Hit const shadowHit = firstIntersect(scene, &shadowRay);
                     if (shadowHit.t < 0)
                     {
@@ -456,19 +453,13 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
                 if (hit.material->attributeMask & SMTA_REFLECTIVE)
                 {
                     Vec3 const reflectedDirection = norm(reflect(hit.normal, ray->direction));
-                    Ray const reflectedRay = {
-                        .origin = add(hit.position, mulf(1e-3f, reflectedDirection)),
-                        .direction = reflectedDirection
-                    };
+                    Ray const reflectedRay = {add(hit.position, mulf(1e-3f, reflectedDirection)), reflectedDirection};
                     outRadiance = add(outRadiance, mul(reflectance, trace(scene, &reflectedRay, depth + 1)));
                 }
                 if (hit.material->attributeMask & SMTA_REFRACTIVE)
                 {
                     Vec3 const refractedDirection = norm(refract(hit.normal, ray->direction, hit.material->refrIdx));
-                    Ray const refractedRay = {
-                        .origin = add(hit.position, mulf(1e-3f, refractedDirection)),
-                        .direction = refractedDirection
-                    };
+                    Ray const refractedRay = {add(hit.position, mulf(1e-3f, refractedDirection)), refractedDirection};
                     Vec3 const white = {1.0f, 1.0f, 1.0f};
                     outRadiance = add(outRadiance, mul(sub(white, reflectance), trace(scene, &refractedRay, depth + 1)));
                 }
