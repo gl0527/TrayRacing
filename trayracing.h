@@ -142,6 +142,12 @@ TRAYRACING_DECL void render(Scene const *const scene, Vec3 *const image, uint32_
 #define RAD2DEG (180.0f/M_PIf)
 #endif
 
+#ifdef __cplusplus
+#define LITERAL(x) x
+#else
+#define LITERAL(x) (x)
+#endif
+
 typedef struct Ray {
     Vec3 origin;
     Vec3 direction;
@@ -156,27 +162,27 @@ typedef struct Hit {
 
 Vec3 inv(Vec3 a)
 {
-    return (Vec3){-a.x, -a.y, -a.z};
+    return LITERAL(Vec3){-a.x, -a.y, -a.z};
 }
 
 Vec3 add(Vec3 a, Vec3 b)
 {
-    return (Vec3){a.x + b.x, a.y + b.y, a.z + b.z};
+    return LITERAL(Vec3){a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
 Vec3 sub(Vec3 a, Vec3 b)
 {
-    return (Vec3){a.x - b.x, a.y - b.y, a.z - b.z};
+    return LITERAL(Vec3){a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
 Vec3 mulf(float f, Vec3 a)
 {
-    return (Vec3){f * a.x, f * a.y, f * a.z };
+    return LITERAL(Vec3){f * a.x, f * a.y, f * a.z };
 }
 
 Vec3 mul(Vec3 a, Vec3 b)
 {
-    return (Vec3){a.x * b.x, a.y * b.y, a.z * b.z};
+    return LITERAL(Vec3){a.x * b.x, a.y * b.y, a.z * b.z};
 }
 
 float dot(Vec3 a, Vec3 b)
@@ -186,7 +192,7 @@ float dot(Vec3 a, Vec3 b)
 
 Vec3 cross(Vec3 a, Vec3 b)
 {
-    return (Vec3){  a.y * b.z - a.z * b.y,
+    return LITERAL(Vec3){  a.y * b.z - a.z * b.y,
                     a.z * b.x - a.x * b.z,
                     a.x * b.y - a.y * b.x};
 }
@@ -262,7 +268,7 @@ void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov)
 static Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight)
 {
     Vec3 const dir = sub(add(add(camera->lookat, mulf((2.0f * (x + 0.5f) / screenWidth - 1), camera->right)), mulf((2.0f * (y + 0.5f) / screenHeight - 1), camera->up)), camera->eye);
-    return (Ray){.origin = camera->eye, .direction = norm(dir)};
+    return LITERAL(Ray){.origin = camera->eye, .direction = norm(dir)};
 }
 
 void createRoughMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess)
@@ -289,7 +295,7 @@ void createSmoothMaterial(Material *const material, Vec3 ambient, Vec3 refrIdx, 
     Vec3 const num = add(mul(refrIdxM1,  refrIdxM1), absorpCoeff2);
     Vec3 const denom = add(mul(refrIdxP1,  refrIdxP1), absorpCoeff2);
 
-    material->minReflectance = (Vec3){num.x / denom.x, num.y / denom.y, num.z / denom.z};
+    material->minReflectance = LITERAL(Vec3){num.x / denom.x, num.y / denom.y, num.z / denom.z};
 }
 
 static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
@@ -445,7 +451,7 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
             break;
         case MT_SMOOTH:
             {
-                Vec3 const reflectance = shade(hit.material, hit.normal, viewDir, (Vec3){0.0f ,0.0f ,0.0f}, (Vec3){0.0f, 0.0f, 0.0f});
+                Vec3 const reflectance = shade(hit.material, hit.normal, viewDir, LITERAL(Vec3){0.0f ,0.0f ,0.0f}, LITERAL(Vec3){0.0f, 0.0f, 0.0f});
 
                 if (hit.material->attributeMask & SMTA_REFLECTIVE)
                 {
