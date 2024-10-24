@@ -68,14 +68,18 @@ typedef struct Sphere {
     Material const *material;
 } Sphere;
 
+typedef enum Values {
+    MAX_MATERIAL_COUNT = 10,
+    MAX_SPHERE_COUNT = 128,
+    MAX_LIGHT_COUNT = 4
+} Values;
+
 typedef struct ResourcePool {
-    enum {MAX_MATERIAL_COUNT = 10} sizes;
     uint8_t currentMaterialCount;
     Material materials[MAX_MATERIAL_COUNT];
 } ResourcePool;
 
 typedef struct Scene {
-    enum {MAX_SPHERE_COUNT = 128, MAX_LIGHT_COUNT = 4} sizes;
     uint8_t currentSphereCount;
     uint8_t currentLightCount;
     Sphere spheres[MAX_SPHERE_COUNT];
