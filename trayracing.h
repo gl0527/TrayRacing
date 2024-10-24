@@ -33,33 +33,23 @@ typedef struct Camera {
 
 typedef enum MaterialType
 {
-    MT_ROUGH,
-    MT_SMOOTH
+    MT_ROUGH = BIT(0),
+    MT_REFLECTIVE = BIT(1),
+    MT_REFRACTIVE = BIT(2),
 } MaterialType;
-
-typedef enum SmoothMaterialAttribute
-{
-    SMTA_REFLECTIVE = BIT(0),
-    SMTA_REFRACTIVE = BIT(1)
-} SmoothMaterialAttribute;
 
 typedef struct Material
 {
-    MaterialType type;
     Vec3 ambient;
-    union {
-        struct {
-            Vec3 diffuse;
-            Vec3 specular;
-            float shininess;
-        };
-        struct {
-            Vec3 minReflectance;
-            Vec3 refrIdx;
-            Vec3 absorpCoeff;
-            uint8_t attributeMask;
-        };
-    };
+    Vec3 diffuse;
+    Vec3 specular;
+    float shininess;
+
+    Vec3 minReflectance;
+    Vec3 refrIdx;
+    Vec3 absorpCoeff;
+
+    uint8_t flags;
 } Material;
 
 typedef struct Sphere {
@@ -108,8 +98,7 @@ TRAYRACING_DECL Vec3 refract(Vec3 n, Vec3 i, Vec3 refrIdx);
 
 TRAYRACING_DECL void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov);
 
-TRAYRACING_DECL void createRoughMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess);
-TRAYRACING_DECL void createSmoothMaterial(Material *const material, Vec3 ambient, Vec3 refrIdx, Vec3 absorption, uint8_t attributes);
+TRAYRACING_DECL void createMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags);
 
 TRAYRACING_DECL void set(ResourcePool *const pResourcePool);
 TRAYRACING_DECL void addMaterial(ResourcePool *const pResourcePool, Material material);
@@ -275,62 +264,58 @@ static Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t s
     return LITERAL(Ray){camera->eye, norm(dir)};
 }
 
-void createRoughMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess)
+void createMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags)
 {
-    material->type = MT_ROUGH;
-    material->ambient = ambient;
-    material->diffuse = diffuse;
-    material->specular = specular;
-    material->shininess = shininess;
-}
+    material->flags = flags;
 
-void createSmoothMaterial(Material *const material, Vec3 ambient, Vec3 refrIdx, Vec3 absorpCoeff, uint8_t attributeMask)
-{
-    material->type = MT_SMOOTH;
-    material->ambient = ambient;
-    material->refrIdx = refrIdx;
-    material->absorpCoeff = absorpCoeff;
-    material->attributeMask = attributeMask;
+    if (flags & MT_ROUGH) {
+        material->ambient = ambient;
+        material->diffuse = diffuse;
+        material->specular = specular;
+        material->shininess = shininess;
+    }
 
-    Vec3 const white = {1.0f, 1.0f, 1.0f};
-    Vec3 const refrIdxP1 = add(refrIdx, white);
-    Vec3 const refrIdxM1 = sub(refrIdx, white);
-    Vec3 const absorpCoeff2 = mul(material->absorpCoeff, material->absorpCoeff);
-    Vec3 const num = add(mul(refrIdxM1,  refrIdxM1), absorpCoeff2);
-    Vec3 const denom = add(mul(refrIdxP1,  refrIdxP1), absorpCoeff2);
+    if (flags & (MT_REFLECTIVE | MT_REFRACTIVE)) {
+        material->refrIdx = refrIdx;
+        material->absorpCoeff = absorption;
 
-    material->minReflectance = LITERAL(Vec3){num.x / denom.x, num.y / denom.y, num.z / denom.z};
+        Vec3 const white = {1.0f, 1.0f, 1.0f};
+        Vec3 const refrIdxP1 = add(refrIdx, white);
+        Vec3 const refrIdxM1 = sub(refrIdx, white);
+        Vec3 const absorpCoeff2 = mul(material->absorpCoeff, material->absorpCoeff);
+        Vec3 const num = add(mul(refrIdxM1,  refrIdxM1), absorpCoeff2);
+        Vec3 const denom = add(mul(refrIdxP1,  refrIdxP1), absorpCoeff2);
+
+        material->minReflectance = LITERAL(Vec3){num.x / denom.x, num.y / denom.y, num.z / denom.z};
+    }
 }
 
 static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
 {
-    switch (material->type)
+    if (material->flags & MT_ROUGH)
     {
-        case MT_ROUGH:
-            {
-                Vec3 outRadiance = {0.0f, 0.0f, 0.0f};
-                float const NdotL = dot(normal, toLight);
-                if (NdotL < 0)
-                {
-                    return outRadiance;
-                }
-                outRadiance = mulf(NdotL, mul(inRadiance, material->diffuse));
-                Vec3 const halfway = norm(add(toEye, toLight));
-                float const NdotH = dot(normal, halfway);
-                if (NdotH < 0)
-                {
-                    return outRadiance;
-                }
+        Vec3 outRadiance = {0.0f, 0.0f, 0.0f};
+        float const NdotL = dot(normal, toLight);
+        if (NdotL < 0)
+        {
+            return outRadiance;
+        }
+        outRadiance = mulf(NdotL, mul(inRadiance, material->diffuse));
+        Vec3 const halfway = norm(add(toEye, toLight));
+        float const NdotH = dot(normal, halfway);
+        if (NdotH < 0)
+        {
+            return outRadiance;
+        }
 
-                return add(outRadiance, mulf(powf(NdotH, material->shininess), mul(inRadiance, material->specular)));
-            }
-        case MT_SMOOTH:
-            {
-                float const cosa = fabsf(dot(normal, toEye));
-                Vec3 const white = {1.0f, 1.0f, 1.0f};
+        return add(outRadiance, mulf(powf(NdotH, material->shininess), mul(inRadiance, material->specular)));
+    }
+    if (material->flags & (MT_REFLECTIVE | MT_REFRACTIVE))
+    {
+        float const cosa = fabsf(dot(normal, toEye));
+        Vec3 const white = {1.0f, 1.0f, 1.0f};
 
-                return add(material->minReflectance, mulf(powf(1.0f - cosa, 5), sub(white, material->minReflectance)));
-            }
+        return add(material->minReflectance, mulf(powf(1.0f - cosa, 5), sub(white, material->minReflectance)));
     }
 }
 
@@ -431,43 +416,37 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
         return scene->ambientLight;
     }
 
-    Vec3 outRadiance = mul(hit.material->ambient, scene->ambientLight);
+    Vec3 outRadiance = {0.0f, 0.0f, 0.0f};
     Vec3 const viewDir = inv(ray->direction);
 
-    switch(hit.material->type)
+    if (hit.material->flags & MT_ROUGH)
     {
-        case MT_ROUGH:
+        outRadiance = add(outRadiance, mul(hit.material->ambient, scene->ambientLight));
+        for (uint8_t i = 0; i < scene->currentLightCount; ++i)
+        {
+            Vec3 const toLight = norm(inv(scene->lights[i].direction));
+            Ray const shadowRay = {add(hit.position, mulf(1e-3f, toLight)), toLight};
+            Hit const shadowHit = firstIntersect(scene, &shadowRay);
+            if (shadowHit.t < 0)
             {
-                for (uint8_t i = 0; i < scene->currentLightCount; ++i)
-                {
-                    Vec3 const toLight = norm(inv(scene->lights[i].direction));
-                    Ray const shadowRay = {add(hit.position, mulf(1e-3f, toLight)), toLight};
-                    Hit const shadowHit = firstIntersect(scene, &shadowRay);
-                    if (shadowHit.t < 0)
-                    {
-                        outRadiance = add(outRadiance, shade(hit.material, hit.normal, viewDir, toLight, scene->lights[i].exitance));
-                    }
-                }
+                outRadiance = add(outRadiance, shade(hit.material, hit.normal, viewDir, toLight, scene->lights[i].exitance));
             }
-            break;
-        case MT_SMOOTH:
-            {
-                Vec3 const reflectance = shade(hit.material, hit.normal, viewDir, LITERAL(Vec3){0.0f ,0.0f ,0.0f}, LITERAL(Vec3){0.0f, 0.0f, 0.0f});
-
-                if (hit.material->attributeMask & SMTA_REFLECTIVE)
-                {
-                    Vec3 const reflectedDirection = norm(reflect(hit.normal, ray->direction));
-                    Ray const reflectedRay = {add(hit.position, mulf(1e-3f, reflectedDirection)), reflectedDirection};
-                    outRadiance = add(outRadiance, mul(reflectance, trace(scene, &reflectedRay, depth + 1)));
-                }
-                if (hit.material->attributeMask & SMTA_REFRACTIVE)
-                {
-                    Vec3 const refractedDirection = norm(refract(hit.normal, ray->direction, hit.material->refrIdx));
-                    Ray const refractedRay = {add(hit.position, mulf(1e-3f, refractedDirection)), refractedDirection};
-                    Vec3 const white = {1.0f, 1.0f, 1.0f};
-                    outRadiance = add(outRadiance, mul(sub(white, reflectance), trace(scene, &refractedRay, depth + 1)));
-                }
-            }
+        }
+    }
+    if (hit.material->flags & MT_REFLECTIVE)
+    {
+        Vec3 const reflectance = shade(hit.material, hit.normal, viewDir, LITERAL(Vec3){0.0f ,0.0f ,0.0f}, LITERAL(Vec3){0.0f, 0.0f, 0.0f});
+        Vec3 const reflectedDirection = norm(reflect(hit.normal, ray->direction));
+        Ray const reflectedRay = {add(hit.position, mulf(1e-3f, reflectedDirection)), reflectedDirection};
+        outRadiance = add(outRadiance, mul(reflectance, trace(scene, &reflectedRay, depth + 1)));
+    }
+    if (hit.material->flags & MT_REFRACTIVE)
+    {
+        Vec3 const reflectance = shade(hit.material, hit.normal, viewDir, LITERAL(Vec3){0.0f ,0.0f ,0.0f}, LITERAL(Vec3){0.0f, 0.0f, 0.0f});
+        Vec3 const refractedDirection = norm(refract(hit.normal, ray->direction, hit.material->refrIdx));
+        Ray const refractedRay = {add(hit.position, mulf(1e-3f, refractedDirection)), refractedDirection};
+        Vec3 const white = {1.0f, 1.0f, 1.0f};
+        outRadiance = add(outRadiance, mul(sub(white, reflectance), trace(scene, &refractedRay, depth + 1)));
     }
 
     return outRadiance;
