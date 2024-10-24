@@ -433,20 +433,23 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
             }
         }
     }
-    if (hit.material->flags & MT_REFLECTIVE)
+    if (hit.material->flags & (MT_REFLECTIVE | MT_REFRACTIVE))
     {
         Vec3 const reflectance = shade(hit.material, hit.normal, viewDir, LITERAL(Vec3){0.0f ,0.0f ,0.0f}, LITERAL(Vec3){0.0f, 0.0f, 0.0f});
-        Vec3 const reflectedDirection = norm(reflect(hit.normal, ray->direction));
-        Ray const reflectedRay = {add(hit.position, mulf(1e-3f, reflectedDirection)), reflectedDirection};
-        outRadiance = add(outRadiance, mul(reflectance, trace(scene, &reflectedRay, depth + 1)));
-    }
-    if (hit.material->flags & MT_REFRACTIVE)
-    {
-        Vec3 const reflectance = shade(hit.material, hit.normal, viewDir, LITERAL(Vec3){0.0f ,0.0f ,0.0f}, LITERAL(Vec3){0.0f, 0.0f, 0.0f});
-        Vec3 const refractedDirection = norm(refract(hit.normal, ray->direction, hit.material->refrIdx));
-        Ray const refractedRay = {add(hit.position, mulf(1e-3f, refractedDirection)), refractedDirection};
-        Vec3 const white = {1.0f, 1.0f, 1.0f};
-        outRadiance = add(outRadiance, mul(sub(white, reflectance), trace(scene, &refractedRay, depth + 1)));
+
+        if (hit.material->flags & MT_REFLECTIVE)
+        {
+            Vec3 const reflectedDirection = norm(reflect(hit.normal, ray->direction));
+            Ray const reflectedRay = {add(hit.position, mulf(1e-3f, reflectedDirection)), reflectedDirection};
+            outRadiance = add(outRadiance, mul(reflectance, trace(scene, &reflectedRay, depth + 1)));
+        }
+        if (hit.material->flags & MT_REFRACTIVE)
+        {
+            Vec3 const refractedDirection = norm(refract(hit.normal, ray->direction, hit.material->refrIdx));
+            Ray const refractedRay = {add(hit.position, mulf(1e-3f, refractedDirection)), refractedDirection};
+            Vec3 const white = {1.0f, 1.0f, 1.0f};
+            outRadiance = add(outRadiance, mul(sub(white, reflectance), trace(scene, &refractedRay, depth + 1)));
+        }
     }
 
     return outRadiance;
