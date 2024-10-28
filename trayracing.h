@@ -106,7 +106,7 @@ TRAYRACING_DECL void addMaterial(ResourcePool *const pResourcePool, Material mat
 TRAYRACING_DECL Scene create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La);
 TRAYRACING_DECL void addSphere(Scene *const scene, Sphere sphere);
 TRAYRACING_DECL void addLight(Scene *const scene, Light light);
-TRAYRACING_DECL void render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, uint32_t imageHeight);
+TRAYRACING_DECL float render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, uint32_t imageHeight);
 
 #ifdef __cplusplus
 }
@@ -118,6 +118,7 @@ TRAYRACING_DECL void render(Scene const *const scene, Vec3 *const image, uint32_
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <time.h>
 
 #ifndef PRECISION
 #define PRECISION 1e-7f
@@ -455,8 +456,10 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
     return outRadiance;
 }
 
-void render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, uint32_t imageHeight)
+float render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, uint32_t imageHeight)
 {
+    clock_t const start = clock();
+
     for (uint32_t y = 0; y < imageHeight; ++y)
     {
         for (uint32_t x = 0; x < imageWidth; ++x)
@@ -465,6 +468,9 @@ void render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, ui
             image[y * imageWidth + x] = trace(scene, &ray, 0);
         }
     }
+
+    // Returns the frame time in milliseconds.
+    return 1000.0f * (clock() - start) / CLOCKS_PER_SEC;
 }
 
 #endif // TRAYRACING_IMPLEMENTATION
