@@ -469,8 +469,8 @@ float render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, u
         }
     }
 
-    // Returns the frame time in milliseconds.
-    return 1000.0f * (clock() - start) / CLOCKS_PER_SEC;
+    // Returns the frame time in seconds.
+    return (float)(clock() - start) / CLOCKS_PER_SEC;
 }
 
 #endif // TRAYRACING_IMPLEMENTATION
