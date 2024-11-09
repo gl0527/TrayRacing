@@ -322,23 +322,37 @@ static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 
 
 static Hit intersect(Sphere const *const sphere, Ray const *const ray)
 {
+    Vec3 const dist = sub(ray->origin, sphere->center);
+    float const b = 2.0f * dot(dist, ray->direction);
+    float const c = lengthSqr(dist) - sphere->radius * sphere->radius;
+    float const disc = b * b - 4.0f * c;
+
     Hit hit;
     hit.t = -1.0f;
 
-    Vec3 const dist = sub(ray->origin, sphere->center);
-    float const b = dot(dist, ray->direction) * 2;
-    float const c = lengthSqr(dist) - sphere->radius * sphere->radius;
-
-    float const disc = b * b - 4 * c;
-    if (disc < 0) {
+    // If the discriminant is negative, there is no real ray - sphere intersection
+    if (disc < 0.0f) {
         return hit;
     }
 
-    float const sqrt_disc = sqrtf(disc);
-    float const t1 = -b + sqrt_disc;
-    if (t1 > PRECISION) {
-        float const t2 = -b - sqrt_disc;
-        hit.t = t2 > PRECISION ? t2 * 0.5f : t1 * 0.5f;
+    // If the discriminant is near-zero, handle tangent case (one intersection point)
+    if (disc < PRECISION) {
+        hit.t = -0.5f * b;
+    } else {
+        // Calculate the two intersection points for large enough positive disc values
+        float const sqrt_disc = sqrtf(disc);
+        float const t1 = -0.5f * (b - sqrt_disc);
+        float const t2 = -0.5f * (b + sqrt_disc);
+
+        if (t2 > PRECISION) {
+            hit.t = t2;
+        } else if (t1 > PRECISION) {
+            hit.t = t1;
+        }
+    }
+
+    // If there is a valid intersection, calculate position and normal
+    if (hit.t > PRECISION) {
         hit.position = add(ray->origin, mulf(hit.t, ray->direction));
         hit.normal = mulf(1.0f / sphere->radius, sub(hit.position, sphere->center));
         hit.material = sphere->material;
