@@ -420,7 +420,7 @@ static Hit firstIntersect(Scene const *const scene, Ray const *const ray)
 
 static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
 {
-    if (depth > 3)
+    if (depth > 5)
     {
         return scene->ambientLight;
     }
