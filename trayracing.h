@@ -330,33 +330,21 @@ static Hit intersect(Sphere const *const sphere, Ray const *const ray)
     Hit hit;
     hit.t = -1.0f;
 
-    // If the discriminant is negative, there is no real ray - sphere intersection
     if (disc < 0.0f) {
         return hit;
     }
+    float const sqrt_disc = sqrtf(disc);
 
-    // If the discriminant is near-zero, handle tangent case (one intersection point)
-    if (disc < PRECISION) {
-        hit.t = -0.5f * b;
-    } else {
-        // Calculate the two intersection points for large enough positive disc values
-        float const sqrt_disc = sqrtf(disc);
-        float const t1 = -0.5f * (b - sqrt_disc);
-        float const t2 = -0.5f * (b + sqrt_disc);
-
-        if (t2 > PRECISION) {
-            hit.t = t2;
-        } else if (t1 > PRECISION) {
-            hit.t = t1;
-        }
+    float const t1 = -0.5f * (b - sqrt_disc);
+    if (t1 < 0.0f) {
+        return hit;
     }
+    float const t2 = -0.5f * (b + sqrt_disc);
 
-    // If there is a valid intersection, calculate position and normal
-    if (hit.t > PRECISION) {
-        hit.position = add(ray->origin, mulf(hit.t, ray->direction));
-        hit.normal = mulf(1.0f / sphere->radius, sub(hit.position, sphere->center));
-        hit.material = sphere->material;
-    }
+    hit.t = (t2 > 0.0f) ? t2 : t1;
+    hit.position = add(ray->origin, mulf(hit.t, ray->direction));
+    hit.normal = mulf(1.0f / sphere->radius, sub(hit.position, sphere->center));
+    hit.material = sphere->material;
 
     return hit;
 }
