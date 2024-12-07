@@ -223,7 +223,6 @@ Vec3 refract(Vec3 n, Vec3 i, Vec3 refrIdx)
     float cosa = dot(n, i);
     if (cosa > 0) {
         cosa = -cosa;
-        n = inv(n);
         refrIdx.x = 1.0f / refrIdx.x;
         refrIdx.y = 1.0f / refrIdx.y;
         refrIdx.z = 1.0f / refrIdx.z;
@@ -403,6 +402,10 @@ static Hit firstIntersect(Scene const *const scene, Ray const *const ray)
         }
     }
 
+    if (dot(ray->direction, bestHit.normal) > 0) {
+        bestHit.normal = inv(bestHit.normal);
+    }
+
     return bestHit;
 }
 
@@ -428,7 +431,7 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
         for (uint8_t i = 0; i < scene->currentLightCount; ++i)
         {
             Vec3 const toLight = norm(inv(scene->lights[i].direction));
-            Ray const shadowRay = {add(hit.position, mulf(1e-3f, toLight)), toLight};
+            Ray const shadowRay = {add(hit.position, mulf(1e-3f, hit.normal)), toLight};
             Hit const shadowHit = firstIntersect(scene, &shadowRay);
             if (shadowHit.t < 0)
             {
@@ -443,13 +446,13 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
         if (hit.material->flags & MT_REFLECTIVE)
         {
             Vec3 const reflectedDirection = norm(reflect(hit.normal, ray->direction));
-            Ray const reflectedRay = {add(hit.position, mulf(1e-3f, reflectedDirection)), reflectedDirection};
+            Ray const reflectedRay = {add(hit.position, mulf(1e-3f, hit.normal)), reflectedDirection};
             outRadiance = add(outRadiance, mul(reflectance, trace(scene, &reflectedRay, depth + 1)));
         }
         if (hit.material->flags & MT_REFRACTIVE)
         {
             Vec3 const refractedDirection = norm(refract(hit.normal, ray->direction, hit.material->refrIdx));
-            Ray const refractedRay = {add(hit.position, mulf(1e-3f, refractedDirection)), refractedDirection};
+            Ray const refractedRay = {sub(hit.position, mulf(1e-3f, hit.normal)), refractedDirection};
             Vec3 const white = {1.0f, 1.0f, 1.0f};
             outRadiance = add(outRadiance, mul(sub(white, reflectance), trace(scene, &refractedRay, depth + 1)));
         }
