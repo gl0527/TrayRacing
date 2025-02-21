@@ -13,6 +13,14 @@
 
 #define BIT(n) (1ULL << (n))
 
+#ifndef FRAME_WIDTH
+#define FRAME_WIDTH 600
+#endif
+
+#ifndef FRAME_HEIGHT
+#define FRAME_HEIGHT 600
+#endif
+
 typedef struct Vec3 {
     float x;
     float y;
@@ -78,6 +86,10 @@ typedef struct Scene {
     Vec3 ambientLight;
 } Scene;
 
+typedef struct Frame {
+    Vec3 data[FRAME_WIDTH * FRAME_HEIGHT];
+} Frame;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -106,7 +118,7 @@ TRAYRACING_DECL void addMaterial(ResourcePool *const pResourcePool, Material mat
 TRAYRACING_DECL Scene create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La);
 TRAYRACING_DECL void addSphere(Scene *const scene, Sphere sphere);
 TRAYRACING_DECL void addLight(Scene *const scene, Light light);
-TRAYRACING_DECL float render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, uint32_t imageHeight);
+TRAYRACING_DECL float render(Scene const *const scene, Frame *const frame);
 
 #ifdef __cplusplus
 }
@@ -461,16 +473,16 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
     return outRadiance;
 }
 
-float render(Scene const *const scene, Vec3 *const image, uint32_t imageWidth, uint32_t imageHeight)
+float render(Scene const *const scene, Frame *const frame)
 {
     clock_t const start = clock();
 
-    for (uint32_t y = 0; y < imageHeight; ++y)
+    for (uint32_t y = 0; y < FRAME_HEIGHT; ++y)
     {
-        for (uint32_t x = 0; x < imageWidth; ++x)
+        for (uint32_t x = 0; x < FRAME_WIDTH; ++x)
         {
-            Ray const ray = GetRay(&(scene->camera), x, y, imageWidth, imageHeight);
-            image[y * imageWidth + x] = trace(scene, &ray, 0);
+            Ray const ray = GetRay(&(scene->camera), x, y, FRAME_WIDTH, FRAME_HEIGHT);
+            frame->data[y * FRAME_WIDTH + x] = trace(scene, &ray, 0);
         }
     }
 

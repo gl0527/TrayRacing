@@ -12,7 +12,8 @@
 
 #define SCREENWIDTH 600
 #define SCREENHEIGHT 600
-Vec3 image[SCREENWIDTH*SCREENHEIGHT];
+
+Frame frame;
 
 #define malloc(x)
 #define calloc(x)
@@ -105,12 +106,12 @@ void onDisplay(void) {
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);		// torlesi szin beallitasa
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // kepernyo torles
 
-    float const frameTime = render(&scene, image, SCREENWIDTH, SCREENHEIGHT);
+    float const frameTime = render(&scene, &frame);
     if (tick != 0) {
         printf("Frame time = %.2fms\n", 1000 * frameTime);
     }
 
-    glDrawPixels(SCREENWIDTH, SCREENHEIGHT, GL_RGB, GL_FLOAT, image);
+    glDrawPixels(FRAME_WIDTH, FRAME_HEIGHT, GL_RGB, GL_FLOAT, frame.data);
 	
     glutSwapBuffers();     				// Buffercsere: rajzolas vege
 }
