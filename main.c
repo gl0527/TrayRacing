@@ -84,7 +84,7 @@ void onInitialization(void) {
     scene = create(eye, up, lookat, fov, ambient);
 
     Vec3 lightDir = {.x = -1.0f, .y = -1.0f, .z = -1.0f};
-    Light light = {norm(lightDir), {.r = 0.8f, .g = 0.8f, .b = 0.8f}};
+    Light light = {vec3_norm(lightDir), {.r = 0.8f, .g = 0.8f, .b = 0.8f}};
     addLight(&scene, light);
 
     for (int i = 0; i < 20; ++i)
@@ -152,7 +152,7 @@ void onIdle(void) {
     tick = (time - (int)time < 1e-1f) ? 1 : 0;
 
     Vec3 const newDir = {.x = cosf(0.5f * time), .y = -1.0f, .z = sinf(0.5f * time)};
-    scene.lights[0].direction = norm(add(newDir, scene.lights[0].direction));
+    scene.lights[0].direction = vec3_norm(vec3_add(newDir, scene.lights[0].direction));
 
     Vec3 eye = {.x = 3.5f * cosf(0.25f * time), .y = scene.camera.eye.y, .z = 3.5f * sinf(0.25f * time)};
     Vec3 up = {.x = 0.0f, .y = 1.0f, .z = 0.0f};
