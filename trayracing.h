@@ -21,10 +21,27 @@
 #define FRAME_HEIGHT 600
 #endif
 
-typedef struct Vec3 {
-    float x;
-    float y;
-    float z;
+typedef union Vec2 {
+    float v[2];
+
+    struct { float x, y; };
+    struct { float r, g; };
+    struct { float s, t; };
+} Vec2;
+
+typedef union Vec3 {
+    float v[3];
+
+    struct { float x, y, z; };
+    struct { float r, g, b; };
+    struct { float s, t, u; };
+
+    struct { Vec2 xy; float _z; };
+    struct { Vec2 rg; float _b; };
+    struct { Vec2 st; float _u; };
+    struct { float _x; Vec2 yz; };
+    struct { float _r; Vec2 gb; };
+    struct { float _s; Vec2 tu; };
 } Vec3;
 
 typedef struct Light {
@@ -168,27 +185,27 @@ typedef struct Hit {
 
 Vec3 inv(Vec3 a)
 {
-    return LITERAL(Vec3){-a.x, -a.y, -a.z};
+    return LITERAL(Vec3){.x = -a.x, .y = -a.y, .z = -a.z};
 }
 
 Vec3 add(Vec3 a, Vec3 b)
 {
-    return LITERAL(Vec3){a.x + b.x, a.y + b.y, a.z + b.z};
+    return LITERAL(Vec3){.x = a.x + b.x, .y = a.y + b.y, .z = a.z + b.z};
 }
 
 Vec3 sub(Vec3 a, Vec3 b)
 {
-    return LITERAL(Vec3){a.x - b.x, a.y - b.y, a.z - b.z};
+    return LITERAL(Vec3){.x = a.x - b.x, .y = a.y - b.y, .z = a.z - b.z};
 }
 
 Vec3 mulf(float f, Vec3 a)
 {
-    return LITERAL(Vec3){f * a.x, f * a.y, f * a.z };
+    return LITERAL(Vec3){.x = f * a.x, .y = f * a.y, .z = f * a.z };
 }
 
 Vec3 mul(Vec3 a, Vec3 b)
 {
-    return LITERAL(Vec3){a.x * b.x, a.y * b.y, a.z * b.z};
+    return LITERAL(Vec3){.x = a.x * b.x, .y = a.y * b.y, .z = a.z * b.z};
 }
 
 float dot(Vec3 a, Vec3 b)
@@ -198,9 +215,9 @@ float dot(Vec3 a, Vec3 b)
 
 Vec3 cross(Vec3 a, Vec3 b)
 {
-    return LITERAL(Vec3){  a.y * b.z - a.z * b.y,
-                    a.z * b.x - a.x * b.z,
-                    a.x * b.y - a.y * b.x};
+    return LITERAL(Vec3){  .x = a.y * b.z - a.z * b.y,
+                    .y = a.z * b.x - a.x * b.z,
+                    .z = a.x * b.y - a.y * b.x};
 }
 
 float lengthSqr(Vec3 a)
@@ -291,14 +308,14 @@ void createMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 s
         material->refrIdx = refrIdx;
         material->absorpCoeff = absorption;
 
-        Vec3 const white = {1.0f, 1.0f, 1.0f};
+        Vec3 const white = {.r = 1.0f, .g = 1.0f, .b = 1.0f};
         Vec3 const refrIdxP1 = add(refrIdx, white);
         Vec3 const refrIdxM1 = sub(refrIdx, white);
         Vec3 const absorpCoeff2 = mul(material->absorpCoeff, material->absorpCoeff);
         Vec3 const num = add(mul(refrIdxM1,  refrIdxM1), absorpCoeff2);
         Vec3 const denom = add(mul(refrIdxP1,  refrIdxP1), absorpCoeff2);
 
-        material->minReflectance = LITERAL(Vec3){num.x / denom.x, num.y / denom.y, num.z / denom.z};
+        material->minReflectance = LITERAL(Vec3){.r = num.r / denom.r, .g = num.g / denom.g, .b = num.b / denom.b};
     }
 }
 
@@ -306,7 +323,7 @@ static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 
 {
     if (material->flags & MT_ROUGH)
     {
-        Vec3 outRadiance = {0.0f, 0.0f, 0.0f};
+        Vec3 outRadiance = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
         float const NdotL = dot(normal, toLight);
         if (NdotL < 0)
         {
@@ -325,10 +342,12 @@ static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 
     if (material->flags & (MT_REFLECTIVE | MT_REFRACTIVE))
     {
         float const cosa = fabsf(dot(normal, toEye));
-        Vec3 const white = {1.0f, 1.0f, 1.0f};
+        Vec3 const white = {.r = 1.0f, .g = 1.0f, .b = 1.0f};
 
         return add(material->minReflectance, mulf(powf(1.0f - cosa, 5), sub(white, material->minReflectance)));
     }
+
+    return LITERAL(Vec3){.r = 0.0f, .g = 0.0f, .b = 0.0f};
 }
 
 static Hit intersect(Sphere const *const sphere, Ray const *const ray)
@@ -434,7 +453,7 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
         return scene->ambientLight;
     }
 
-    Vec3 outRadiance = {0.0f, 0.0f, 0.0f};
+    Vec3 outRadiance = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
     Vec3 const viewDir = inv(ray->direction);
 
     if (hit.material->flags & MT_ROUGH)
@@ -453,7 +472,7 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
     }
     if (hit.material->flags & (MT_REFLECTIVE | MT_REFRACTIVE))
     {
-        Vec3 const reflectance = shade(hit.material, hit.normal, viewDir, LITERAL(Vec3){0.0f ,0.0f ,0.0f}, LITERAL(Vec3){0.0f, 0.0f, 0.0f});
+        Vec3 const reflectance = shade(hit.material, hit.normal, viewDir, LITERAL(Vec3){.r = 0.0f , .g = 0.0f , .b = 0.0f}, LITERAL(Vec3){.r = 0.0f, .g = 0.0f, .b = 0.0f});
 
         if (hit.material->flags & MT_REFLECTIVE)
         {
@@ -465,7 +484,7 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
         {
             Vec3 const refractedDirection = norm(refract(hit.normal, ray->direction, hit.material->refrIdx));
             Ray const refractedRay = {sub(hit.position, mulf(1e-3f, hit.normal)), refractedDirection};
-            Vec3 const white = {1.0f, 1.0f, 1.0f};
+            Vec3 const white = {.r = 1.0f, .g = 1.0f, .b = 1.0f};
             outRadiance = add(outRadiance, mul(sub(white, reflectance), trace(scene, &refractedRay, depth + 1)));
         }
     }

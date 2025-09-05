@@ -38,32 +38,32 @@ void onInitialization(void) {
     srand(time(NULL));
 	glViewport(0, 0, SCREENWIDTH, SCREENHEIGHT);
 
-    Vec3 nullVec = {0.0f, 0.0f, 0.0f};
+    Vec3 nullVec = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
 
-    Vec3 kdEmerald = {0.07568f, 0.61424f, 0.07568f};
-    Vec3 ksEmerald = {0.633f, 0.727811f, 0.633f};
-    Vec3 kaEmerald = {0.0215f, 0.1745f, 0.02145f};
+    Vec3 kdEmerald = {.r = 0.07568f, .g = 0.61424f, .b = 0.07568f};
+    Vec3 ksEmerald = {.r = 0.633f, .g = 0.727811f, .b = 0.633f};
+    Vec3 kaEmerald = {.r = 0.0215f, .g = 0.1745f, .b = 0.02145f};
     Material materialEmerald;
     createMaterial(&materialEmerald, kaEmerald, kdEmerald, ksEmerald, 76.8f, nullVec, nullVec, MT_ROUGH);
     
-    Vec3 kdCopper = {0.7038f, 0.27048f, 0.0828f};
-    Vec3 ksCopper = {0.256777f, 0.137622f, 0.086014f};
-    Vec3 kaCopper = {0.19125f, 0.0735f, 0.0225f};
+    Vec3 kdCopper = {.r = 0.7038f, .g = 0.27048f, .b = 0.0828f};
+    Vec3 ksCopper = {.r = 0.256777f, .g = 0.137622f, .b = 0.086014f};
+    Vec3 kaCopper = {.r = 0.19125f, .g = 0.0735f, .b = 0.0225f};
     Material materialCopper;
     createMaterial(&materialCopper, kaCopper, kdCopper, ksCopper, 12.8f, nullVec, nullVec, MT_ROUGH);
 
-    Vec3 goldN = {0.17f, 0.35f, 1.5f};
-    Vec3 goldK = {3.1f, 2.7f, 1.9f};
+    Vec3 goldN = {.r = 0.17f, .g = 0.35f, .b = 1.5f};
+    Vec3 goldK = {.r = 3.1f, .g = 2.7f, .b = 1.9f};
     Material gold;
     createMaterial(&gold, nullVec, nullVec, nullVec, 0.0f, goldN, goldK, MT_REFLECTIVE);
 
-    Vec3 glassN = {1.5f, 1.5f, 1.5f};
-    Vec3 glassK = {0.0f, 0.0f, 0.0f};
+    Vec3 glassN = {.r = 1.5f, .g = 1.5f, .b = 1.5f};
+    Vec3 glassK = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
     Material glass;
     createMaterial(&glass, nullVec, nullVec, nullVec, 0.0f, glassN, glassK, MT_REFLECTIVE | MT_REFRACTIVE);
 
-    Vec3 silverN = {0.14f, 0.16f, 0.13f};
-    Vec3 silverK = {4.1f, 2.3f, 3.1f};
+    Vec3 silverN = {.r = 0.14f, .g = 0.16f, .b = 0.13f};
+    Vec3 silverK = {.r = 4.1f, .g = 2.3f, .b = 3.1f};
     Material silver;
     createMaterial(&silver, nullVec, nullVec, nullVec, 0.0f, silverN, silverK, MT_REFLECTIVE);
 
@@ -75,27 +75,27 @@ void onInitialization(void) {
     addMaterial(&resourcePool, glass);
     addMaterial(&resourcePool, silver);
 
-    Vec3 eye = {0.0f, 2.0f, 4.0f};
-    Vec3 up = {0.0f, 1.0f, 0.0f};
-    Vec3 lookat = {0.0f, 0.0f, 0.0f};
+    Vec3 eye = {.x = 0.0f, .y = 2.0f, .z = 4.0f};
+    Vec3 up = {.x = 0.0f, .y = 1.0f, .z = 0.0f};
+    Vec3 lookat = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
     float fov = 60 * DEG2RAD;
-    Vec3 ambient = {0.5f, 0.6f, 0.8f};
+    Vec3 ambient = {.x = 0.5f, .y = 0.6f, .z = 0.8f};
 
     scene = create(eye, up, lookat, fov, ambient);
 
-    Vec3 lightDir = {-1.0f, -1.0f, -1.0f};
-    Light light = {norm(lightDir), {0.8f, 0.8f, 0.8f}};
+    Vec3 lightDir = {.x = -1.0f, .y = -1.0f, .z = -1.0f};
+    Light light = {norm(lightDir), {.r = 0.8f, .g = 0.8f, .b = 0.8f}};
     addLight(&scene, light);
 
     for (int i = 0; i < 20; ++i)
     {
-        Vec3 center = {RAND_FLOAT(-1.0f, 1.0f), RAND_FLOAT(-1.0f, 1.0f), RAND_FLOAT(-1.0f, 1.0f)};
+        Vec3 center = {.x = RAND_FLOAT(-1.0f, 1.0f), .y = RAND_FLOAT(-1.0f, 1.0f), .z = RAND_FLOAT(-1.0f, 1.0f)};
         float radius = RAND_FLOAT(0.2f, 0.4f);
         Sphere sphere = {center, radius, &(resourcePool.materials[RAND_INT(0, 4)])};
         addSphere(&scene, sphere);
     }
 
-    Vec3 center = {0.0f, -2002.0f, 0.0f};
+    Vec3 center = {.x = 0.0f, .y = -2002.0f, .z = 0.0f};
     float radius = 2000.0f;
     Sphere sphere = {center, radius, &(resourcePool.materials[RAND_INT(0, 0)])};
     addSphere(&scene, sphere);
@@ -151,12 +151,12 @@ void onIdle(void) {
 
     tick = (time - (int)time < 1e-1f) ? 1 : 0;
 
-    Vec3 const newDir = {cosf(0.5f * time), -1.0f, sinf(0.5f * time)};
+    Vec3 const newDir = {.x = cosf(0.5f * time), .y = -1.0f, .z = sinf(0.5f * time)};
     scene.lights[0].direction = norm(add(newDir, scene.lights[0].direction));
 
-    Vec3 eye = {3.5f * cosf(0.25f * time), scene.camera.eye.y, 3.5f * sinf(0.25f * time)};
-    Vec3 up = {0.0f, 1.0f, 0.0f};
-    Vec3 lookat = {0.0f, 0.0f, 0.0f};
+    Vec3 eye = {.x = 3.5f * cosf(0.25f * time), .y = scene.camera.eye.y, .z = 3.5f * sinf(0.25f * time)};
+    Vec3 up = {.x = 0.0f, .y = 1.0f, .z = 0.0f};
+    Vec3 lookat = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
     float fov = 60 * DEG2RAD;
 
     SetUp(&(scene.camera), eye, lookat, up, fov);
