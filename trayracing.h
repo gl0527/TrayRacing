@@ -111,6 +111,17 @@ typedef struct Frame {
 extern "C" {
 #endif
 
+TRAYRACING_DECL Vec2 vec2_inv(Vec2 a);
+TRAYRACING_DECL Vec2 vec2_add(Vec2 a, Vec2 b);
+TRAYRACING_DECL Vec2 vec2_sub(Vec2 a, Vec2 b);
+TRAYRACING_DECL Vec2 vec2_mulf(float f, Vec2 a);
+TRAYRACING_DECL Vec2 vec2_mul(Vec2 a, Vec2 b);
+TRAYRACING_DECL float vec2_dot(Vec2 a, Vec2 b);
+TRAYRACING_DECL float vec2_lengthSqr(Vec2 a);
+TRAYRACING_DECL float vec2_length(Vec2 a);
+TRAYRACING_DECL Vec2 vec2_norm(Vec2 a);
+TRAYRACING_DECL float vec2_dist(Vec2 a, Vec2 b);
+
 TRAYRACING_DECL Vec3 vec3_inv(Vec3 a);
 TRAYRACING_DECL Vec3 vec3_add(Vec3 a, Vec3 b);
 TRAYRACING_DECL Vec3 vec3_sub(Vec3 a, Vec3 b);
@@ -182,6 +193,58 @@ typedef struct Hit {
     Vec3 normal;
     Material const *material;
 } Hit;
+
+Vec2 vec2_inv(Vec2 a)
+{
+    return LITERAL(Vec2){.x = -a.x, .y = -a.y};
+}
+
+Vec2 vec2_add(Vec2 a, Vec2 b)
+{
+    return LITERAL(Vec2){.x = a.x + b.x, .y = a.y + b.y};
+}
+
+Vec2 vec2_sub(Vec2 a, Vec2 b)
+{
+    return LITERAL(Vec2){.x = a.x - b.x, .y = a.y - b.y};
+}
+
+Vec2 vec2_mulf(float f, Vec2 a)
+{
+    return LITERAL(Vec2){.x = f * a.x, .y = f * a.y};
+}
+
+Vec2 vec2_mul(Vec2 a, Vec2 b)
+{
+    return LITERAL(Vec2){.x = a.x * b.x, .y = a.y * b.y};
+}
+
+float vec2_dot(Vec2 a, Vec2 b)
+{
+    return a.x * b.x + a.y * b.y;
+}
+
+float vec2_lengthSqr(Vec2 a)
+{
+    return a.x * a.x + a.y * a.y;
+}
+
+float vec2_length(Vec2 a)
+{
+    return sqrtf(vec2_lengthSqr(a));
+}
+
+Vec2 vec2_norm(Vec2 a)
+{
+    float const len = vec2_length(a);
+
+    return (len > PRECISION) ? vec2_mulf(1.0f / len, a) : a;
+}
+
+float vec2_dist(Vec2 a, Vec2 b)
+{
+    return vec2_length(vec2_sub(b, a));
+}
 
 Vec3 vec3_inv(Vec3 a)
 {
