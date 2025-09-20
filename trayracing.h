@@ -136,17 +136,17 @@ TRAYRACING_DECL float vec3_dist(Vec3 a, Vec3 b);
 TRAYRACING_DECL Vec3 vec3_reflect(Vec3 n, Vec3 v);
 TRAYRACING_DECL Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx);
 
-TRAYRACING_DECL void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov);
+TRAYRACING_DECL void camera_create(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov);
 
-TRAYRACING_DECL void createMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags);
+TRAYRACING_DECL void material_create(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags);
 
-TRAYRACING_DECL void set(ResourcePool *const pResourcePool);
-TRAYRACING_DECL void addMaterial(ResourcePool *const pResourcePool, Material material);
+TRAYRACING_DECL void resourcepool_create(ResourcePool *const pResourcePool);
+TRAYRACING_DECL void resourcepool_add_material(ResourcePool *const pResourcePool, Material material);
 
-TRAYRACING_DECL Scene create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La);
-TRAYRACING_DECL void addSphere(Scene *const scene, Sphere sphere);
-TRAYRACING_DECL void addLight(Scene *const scene, Light light);
-TRAYRACING_DECL float render(Scene const *const scene, Frame *const frame);
+TRAYRACING_DECL Scene scene_create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La);
+TRAYRACING_DECL void scene_add_sphere(Scene *const scene, Sphere sphere);
+TRAYRACING_DECL void scene_add_light(Scene *const scene, Light light);
+TRAYRACING_DECL float scene_render(Scene const *const scene, Frame *const frame);
 
 #ifdef __cplusplus
 }
@@ -410,7 +410,7 @@ static inline Vec3 vec3_negative_unit_z(void)
     return LITERAL(Vec3){.x = 0.0f, .y = 0.0f, .z = -1.0f};
 }
 
-void SetUp(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov)
+void camera_create(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov)
 {
     camera->eye = eye;
     camera->lookat = lookat;
@@ -426,7 +426,7 @@ static Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t s
     return LITERAL(Ray){camera->eye, vec3_norm(dir)};
 }
 
-void createMaterial(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags)
+void material_create(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags)
 {
     material->flags = flags;
 
@@ -510,22 +510,22 @@ static Hit intersect(Sphere const *const sphere, Ray const *const ray)
     return hit;
 }
 
-void set(ResourcePool *const pResourcePool)
+void resourcepool_create(ResourcePool *const pResourcePool)
 {
     pResourcePool->currentMaterialCount = 0;
 }
 
-void addMaterial(ResourcePool *const pResourcePool, Material material)
+void resourcepool_add_material(ResourcePool *const pResourcePool, Material material)
 {
     if (pResourcePool->currentMaterialCount < MAX_MATERIAL_COUNT) {
         pResourcePool->materials[pResourcePool->currentMaterialCount++] = material;
     }
 }
 
-Scene create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La)
+Scene scene_create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La)
 {
     Camera cam;
-    SetUp(&cam, eye, lookat, up, fov);
+    camera_create(&cam, eye, lookat, up, fov);
 
     Scene scene;
 
@@ -537,14 +537,14 @@ Scene create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La)
     return scene;
 }
 
-void addSphere(Scene *const scene, Sphere sphere)
+void scene_add_sphere(Scene *const scene, Sphere sphere)
 {
     if (scene->currentSphereCount < MAX_SPHERE_COUNT) {
         scene->spheres[scene->currentSphereCount++] = sphere;
     }
 }
 
-void addLight(Scene *const scene, Light light)
+void scene_add_light(Scene *const scene, Light light)
 {
     if (scene->currentLightCount < MAX_LIGHT_COUNT) {
         scene->lights[scene->currentLightCount++] = light;
@@ -622,7 +622,7 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
     return outRadiance;
 }
 
-float render(Scene const *const scene, Frame *const frame)
+float scene_render(Scene const *const scene, Frame *const frame)
 {
     clock_t const start = clock();
 

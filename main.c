@@ -44,36 +44,36 @@ void onInitialization(void) {
     Vec3 ksEmerald = {.r = 0.633f, .g = 0.727811f, .b = 0.633f};
     Vec3 kaEmerald = {.r = 0.0215f, .g = 0.1745f, .b = 0.02145f};
     Material materialEmerald;
-    createMaterial(&materialEmerald, kaEmerald, kdEmerald, ksEmerald, 76.8f, nullVec, nullVec, MT_ROUGH);
+    material_create(&materialEmerald, kaEmerald, kdEmerald, ksEmerald, 76.8f, nullVec, nullVec, MT_ROUGH);
     
     Vec3 kdCopper = {.r = 0.7038f, .g = 0.27048f, .b = 0.0828f};
     Vec3 ksCopper = {.r = 0.256777f, .g = 0.137622f, .b = 0.086014f};
     Vec3 kaCopper = {.r = 0.19125f, .g = 0.0735f, .b = 0.0225f};
     Material materialCopper;
-    createMaterial(&materialCopper, kaCopper, kdCopper, ksCopper, 12.8f, nullVec, nullVec, MT_ROUGH);
+    material_create(&materialCopper, kaCopper, kdCopper, ksCopper, 12.8f, nullVec, nullVec, MT_ROUGH);
 
     Vec3 goldN = {.r = 0.17f, .g = 0.35f, .b = 1.5f};
     Vec3 goldK = {.r = 3.1f, .g = 2.7f, .b = 1.9f};
     Material gold;
-    createMaterial(&gold, nullVec, nullVec, nullVec, 0.0f, goldN, goldK, MT_REFLECTIVE);
+    material_create(&gold, nullVec, nullVec, nullVec, 0.0f, goldN, goldK, MT_REFLECTIVE);
 
     Vec3 glassN = {.r = 1.5f, .g = 1.5f, .b = 1.5f};
     Vec3 glassK = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
     Material glass;
-    createMaterial(&glass, nullVec, nullVec, nullVec, 0.0f, glassN, glassK, MT_REFLECTIVE | MT_REFRACTIVE);
+    material_create(&glass, nullVec, nullVec, nullVec, 0.0f, glassN, glassK, MT_REFLECTIVE | MT_REFRACTIVE);
 
     Vec3 silverN = {.r = 0.14f, .g = 0.16f, .b = 0.13f};
     Vec3 silverK = {.r = 4.1f, .g = 2.3f, .b = 3.1f};
     Material silver;
-    createMaterial(&silver, nullVec, nullVec, nullVec, 0.0f, silverN, silverK, MT_REFLECTIVE);
+    material_create(&silver, nullVec, nullVec, nullVec, 0.0f, silverN, silverK, MT_REFLECTIVE);
 
-    set(&resourcePool);
+    resourcepool_create(&resourcePool);
 
-    addMaterial(&resourcePool, materialEmerald);
-    addMaterial(&resourcePool, materialCopper);
-    addMaterial(&resourcePool, gold);
-    addMaterial(&resourcePool, glass);
-    addMaterial(&resourcePool, silver);
+    resourcepool_add_material(&resourcePool, materialEmerald);
+    resourcepool_add_material(&resourcePool, materialCopper);
+    resourcepool_add_material(&resourcePool, gold);
+    resourcepool_add_material(&resourcePool, glass);
+    resourcepool_add_material(&resourcePool, silver);
 
     Vec3 eye = {.x = 0.0f, .y = 2.0f, .z = 4.0f};
     Vec3 up = {.x = 0.0f, .y = 1.0f, .z = 0.0f};
@@ -81,24 +81,24 @@ void onInitialization(void) {
     float fov = 60 * DEG2RAD;
     Vec3 ambient = {.x = 0.5f, .y = 0.6f, .z = 0.8f};
 
-    scene = create(eye, up, lookat, fov, ambient);
+    scene = scene_create(eye, up, lookat, fov, ambient);
 
     Vec3 lightDir = {.x = -1.0f, .y = -1.0f, .z = -1.0f};
     Light light = {vec3_norm(lightDir), {.r = 0.8f, .g = 0.8f, .b = 0.8f}};
-    addLight(&scene, light);
+    scene_add_light(&scene, light);
 
     for (int i = 0; i < 20; ++i)
     {
         Vec3 center = {.x = RAND_FLOAT(-1.0f, 1.0f), .y = RAND_FLOAT(-1.0f, 1.0f), .z = RAND_FLOAT(-1.0f, 1.0f)};
         float radius = RAND_FLOAT(0.2f, 0.4f);
         Sphere sphere = {center, radius, &(resourcePool.materials[RAND_INT(0, 4)])};
-        addSphere(&scene, sphere);
+        scene_add_sphere(&scene, sphere);
     }
 
     Vec3 center = {.x = 0.0f, .y = -2002.0f, .z = 0.0f};
     float radius = 2000.0f;
     Sphere sphere = {center, radius, &(resourcePool.materials[RAND_INT(0, 0)])};
-    addSphere(&scene, sphere);
+    scene_add_sphere(&scene, sphere);
 }
 
 // Rajzolas, ha az alkalmazas ablak ervenytelenne valik, akkor ez a fuggveny hivodik meg
@@ -106,7 +106,7 @@ void onDisplay(void) {
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);		// torlesi szin beallitasa
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // kepernyo torles
 
-    float const frameTime = render(&scene, &frame);
+    float const frameTime = scene_render(&scene, &frame);
     if (tick != 0) {
         printf("Frame time = %.2fms\n", 1000 * frameTime);
     }
@@ -159,7 +159,7 @@ void onIdle(void) {
     Vec3 lookat = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
     float fov = 60 * DEG2RAD;
 
-    SetUp(&(scene.camera), eye, lookat, up, fov);
+    camera_create(&(scene.camera), eye, lookat, up, fov);
 
     glutPostRedisplay();
 }
