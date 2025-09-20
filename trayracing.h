@@ -136,11 +136,11 @@ TRAYRACING_DECL float vec3_dist(Vec3 a, Vec3 b);
 TRAYRACING_DECL Vec3 vec3_reflect(Vec3 n, Vec3 v);
 TRAYRACING_DECL Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx);
 
-TRAYRACING_DECL void camera_create(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov);
+TRAYRACING_DECL Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fov);
 
-TRAYRACING_DECL void material_create(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags);
+TRAYRACING_DECL Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags);
 
-TRAYRACING_DECL void resourcepool_create(ResourcePool *const pResourcePool);
+TRAYRACING_DECL ResourcePool resourcepool_create(void);
 TRAYRACING_DECL void resourcepool_add_material(ResourcePool *const pResourcePool, Material material);
 
 TRAYRACING_DECL Scene scene_create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La);
@@ -410,14 +410,18 @@ static inline Vec3 vec3_negative_unit_z(void)
     return LITERAL(Vec3){.x = 0.0f, .y = 0.0f, .z = -1.0f};
 }
 
-void camera_create(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fov)
+Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fov)
 {
-    camera->eye = eye;
-    camera->lookat = lookat;
-    Vec3 const w = vec3_sub(eye, camera->lookat);
+    Camera camera;
+
+    camera.eye = eye;
+    camera.lookat = lookat;
+    Vec3 const w = vec3_sub(eye, camera.lookat);
     float const windowSize = vec3_length(w) * tanf(fov * 0.5f);
-    camera->right = vec3_mulf(windowSize, vec3_norm(vec3_cross(up, w)));
-    camera->up = vec3_mulf(windowSize, vec3_norm(vec3_cross(w, camera->right)));
+    camera.right = vec3_mulf(windowSize, vec3_norm(vec3_cross(up, w)));
+    camera.up = vec3_mulf(windowSize, vec3_norm(vec3_cross(w, camera.right)));
+
+    return camera;
 }
 
 static Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight)
@@ -426,29 +430,33 @@ static Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t s
     return LITERAL(Ray){camera->eye, vec3_norm(dir)};
 }
 
-void material_create(Material *const material, Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags)
+Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags)
 {
-    material->flags = flags;
+    Material material;
+
+    material.flags = flags;
 
     if (flags & MT_ROUGH) {
-        material->ambient = ambient;
-        material->diffuse = diffuse;
-        material->specular = specular;
-        material->shininess = shininess;
+        material.ambient = ambient;
+        material.diffuse = diffuse;
+        material.specular = specular;
+        material.shininess = shininess;
     }
 
     if (flags & (MT_REFLECTIVE | MT_REFRACTIVE)) {
-        material->refrIdx = refrIdx;
-        material->absorpCoeff = absorption;
+        material.refrIdx = refrIdx;
+        material.absorpCoeff = absorption;
 
         Vec3 const refrIdxP1 = vec3_add(refrIdx, vec3_one());
         Vec3 const refrIdxM1 = vec3_sub(refrIdx, vec3_one());
-        Vec3 const absorpCoeff2 = vec3_mul(material->absorpCoeff, material->absorpCoeff);
+        Vec3 const absorpCoeff2 = vec3_mul(material.absorpCoeff, material.absorpCoeff);
         Vec3 const num = vec3_add(vec3_mul(refrIdxM1,  refrIdxM1), absorpCoeff2);
         Vec3 const denom = vec3_add(vec3_mul(refrIdxP1,  refrIdxP1), absorpCoeff2);
 
-        material->minReflectance = LITERAL(Vec3){.r = num.r / denom.r, .g = num.g / denom.g, .b = num.b / denom.b};
+        material.minReflectance = LITERAL(Vec3){.r = num.r / denom.r, .g = num.g / denom.g, .b = num.b / denom.b};
     }
+
+    return material;
 }
 
 static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
@@ -510,9 +518,13 @@ static Hit intersect(Sphere const *const sphere, Ray const *const ray)
     return hit;
 }
 
-void resourcepool_create(ResourcePool *const pResourcePool)
+ResourcePool resourcepool_create(void)
 {
-    pResourcePool->currentMaterialCount = 0;
+    ResourcePool resourcePool;
+
+    resourcePool.currentMaterialCount = 0;
+
+    return resourcePool;
 }
 
 void resourcepool_add_material(ResourcePool *const pResourcePool, Material material)
@@ -524,8 +536,7 @@ void resourcepool_add_material(ResourcePool *const pResourcePool, Material mater
 
 Scene scene_create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La)
 {
-    Camera cam;
-    camera_create(&cam, eye, lookat, up, fov);
+    Camera cam = camera_create(eye, lookat, up, fov);
 
     Scene scene;
 
