@@ -38,34 +38,32 @@ void onInitialization(void) {
     srand(time(NULL));
 	glViewport(0, 0, SCREENWIDTH, SCREENHEIGHT);
 
-    Vec3 nullVec = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
-
     Vec3 kdEmerald = {.r = 0.07568f, .g = 0.61424f, .b = 0.07568f};
     Vec3 ksEmerald = {.r = 0.633f, .g = 0.727811f, .b = 0.633f};
     Vec3 kaEmerald = {.r = 0.0215f, .g = 0.1745f, .b = 0.02145f};
     Material materialEmerald;
-    material_create(&materialEmerald, kaEmerald, kdEmerald, ksEmerald, 76.8f, nullVec, nullVec, MT_ROUGH);
+    material_create(&materialEmerald, kaEmerald, kdEmerald, ksEmerald, 76.8f, vec3_zero(), vec3_zero(), MT_ROUGH);
     
     Vec3 kdCopper = {.r = 0.7038f, .g = 0.27048f, .b = 0.0828f};
     Vec3 ksCopper = {.r = 0.256777f, .g = 0.137622f, .b = 0.086014f};
     Vec3 kaCopper = {.r = 0.19125f, .g = 0.0735f, .b = 0.0225f};
     Material materialCopper;
-    material_create(&materialCopper, kaCopper, kdCopper, ksCopper, 12.8f, nullVec, nullVec, MT_ROUGH);
+    material_create(&materialCopper, kaCopper, kdCopper, ksCopper, 12.8f, vec3_zero(), vec3_zero(), MT_ROUGH);
 
     Vec3 goldN = {.r = 0.17f, .g = 0.35f, .b = 1.5f};
     Vec3 goldK = {.r = 3.1f, .g = 2.7f, .b = 1.9f};
     Material gold;
-    material_create(&gold, nullVec, nullVec, nullVec, 0.0f, goldN, goldK, MT_REFLECTIVE);
+    material_create(&gold, vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, goldN, goldK, MT_REFLECTIVE);
 
     Vec3 glassN = {.r = 1.5f, .g = 1.5f, .b = 1.5f};
     Vec3 glassK = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
     Material glass;
-    material_create(&glass, nullVec, nullVec, nullVec, 0.0f, glassN, glassK, MT_REFLECTIVE | MT_REFRACTIVE);
+    material_create(&glass, vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, glassN, glassK, MT_REFLECTIVE | MT_REFRACTIVE);
 
     Vec3 silverN = {.r = 0.14f, .g = 0.16f, .b = 0.13f};
     Vec3 silverK = {.r = 4.1f, .g = 2.3f, .b = 3.1f};
     Material silver;
-    material_create(&silver, nullVec, nullVec, nullVec, 0.0f, silverN, silverK, MT_REFLECTIVE);
+    material_create(&silver, vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, silverN, silverK, MT_REFLECTIVE);
 
     resourcepool_create(&resourcePool);
 
