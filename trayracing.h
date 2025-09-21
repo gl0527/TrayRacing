@@ -489,6 +489,50 @@ static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 
     return vec3_zero();
 }
 
+static Material material_emerald(void)
+{
+    Vec3 const diffuse = {.r = 0.07568f, .g = 0.61424f, .b = 0.07568f};
+    Vec3 const specular = {.r = 0.633f, .g = 0.727811f, .b = 0.633f};
+    Vec3 const ambient = {.r = 0.0215f, .g = 0.1745f, .b = 0.02145f};
+    float const shininess = 76.8f;
+
+    return material_create(ambient, diffuse, specular, shininess, vec3_zero(), vec3_zero(), MT_ROUGH);
+}
+
+static Material material_copper(void)
+{
+    Vec3 const diffuse = {.r = 0.7038f, .g = 0.27048f, .b = 0.0828f};
+    Vec3 const specular = {.r = 0.256777f, .g = 0.137622f, .b = 0.086014f};
+    Vec3 const ambient = {.r = 0.19125f, .g = 0.0735f, .b = 0.0225f};
+    float const shininess = 12.8f;
+
+    return material_create(ambient, diffuse, specular, shininess, vec3_zero(), vec3_zero(), MT_ROUGH);
+}
+
+static Material material_gold(void)
+{
+    Vec3 eta = {.r = 0.17f, .g = 0.35f, .b = 1.5f};
+    Vec3 kappa = {.r = 3.1f, .g = 2.7f, .b = 1.9f};
+
+    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE);
+}
+
+static Material material_glass(void)
+{
+    Vec3 eta = {.r = 1.5f, .g = 1.5f, .b = 1.5f};
+    Vec3 kappa = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
+
+    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE | MT_REFRACTIVE);
+}
+
+static Material material_silver(void)
+{
+    Vec3 eta = {.r = 0.14f, .g = 0.16f, .b = 0.13f};
+    Vec3 kappa = {.r = 4.1f, .g = 2.3f, .b = 3.1f};
+
+    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE);
+}
+
 static Hit intersect(Sphere const *const sphere, Ray const *const ray)
 {
     Vec3 const dist = vec3_sub(ray->origin, sphere->center);
