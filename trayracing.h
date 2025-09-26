@@ -499,16 +499,6 @@ static Material material_emerald(void)
     return material_create(ambient, diffuse, specular, shininess, vec3_zero(), vec3_zero(), MT_ROUGH);
 }
 
-static Material material_copper(void)
-{
-    Vec3 const diffuse = {.r = 0.7038f, .g = 0.27048f, .b = 0.0828f};
-    Vec3 const specular = {.r = 0.256777f, .g = 0.137622f, .b = 0.086014f};
-    Vec3 const ambient = {.r = 0.19125f, .g = 0.0735f, .b = 0.0225f};
-    float const shininess = 12.8f;
-
-    return material_create(ambient, diffuse, specular, shininess, vec3_zero(), vec3_zero(), MT_ROUGH);
-}
-
 static Material material_gold(void)
 {
     Vec3 eta = {.r = 0.17f, .g = 0.35f, .b = 1.5f};
@@ -529,6 +519,22 @@ static Material material_silver(void)
 {
     Vec3 eta = {.r = 0.14f, .g = 0.16f, .b = 0.13f};
     Vec3 kappa = {.r = 4.1f, .g = 2.3f, .b = 3.1f};
+
+    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE);
+}
+
+static Material material_diamond(void)
+{
+    Vec3 eta = {.r = 2.4f, .g = 2.4f, .b = 2.4f};
+    Vec3 kappa = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
+
+    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE | MT_REFRACTIVE);
+}
+
+static Material material_copper(void)
+{
+    Vec3 eta = {.r = 0.2f, .g = 1.1f, .b = 1.2f};
+    Vec3 kappa = {.r = 3.6f, .g = 2.6f, .b = 2.3f};
 
     return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE);
 }
