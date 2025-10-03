@@ -1,7 +1,6 @@
 #define TRAYRACING_IMPLEMENTATION
 #include "trayracing.h"
 
-#include <stdlib.h>
 #include <time.h>
 
 #include <stdio.h>
@@ -18,14 +17,6 @@ Frame frame;
 #define malloc(x)
 #define calloc(x)
 #define realloc(x)
-
-#ifndef RAND_FLOAT
-#define RAND_FLOAT(min,max) (((max)-(min)) * (float)rand() / RAND_MAX + (min))
-#endif
-
-#ifndef RAND_INT
-#define RAND_INT(min,max) (rand() % ((max) - (min) + 1) + (min))
-#endif
 
 #define UNUSED(x) (void)(x)
 
@@ -61,16 +52,16 @@ void onInitialization(void) {
 
     for (int i = 0; i < 20; ++i)
     {
-        Vec3 center = {.x = RAND_FLOAT(-1.0f, 1.0f), .y = RAND_FLOAT(-1.0f, 1.0f), .z = RAND_FLOAT(-1.0f, 1.0f)};
-        float radius = RAND_FLOAT(0.2f, 0.4f);
-        int const materialIndex = RAND_INT(0, resourcePool.currentMaterialCount - 1);
+        Vec3 center = {.x = rand_float(-1.0f, 1.0f), .y = rand_float(-1.0f, 1.0f), .z = rand_float(-1.0f, 1.0f)};
+        float radius = rand_float(0.2f, 0.4f);
+        int const materialIndex = rand_int(0, resourcePool.currentMaterialCount - 1);
         Sphere sphere = {center, radius, &(resourcePool.materials[materialIndex])};
         scene_add_sphere(&scene, sphere);
     }
 
     Vec3 center = {.x = 0.0f, .y = -102.0f, .z = 0.0f};
     float radius = 100.0f;
-    Sphere sphere = {center, radius, &(resourcePool.materials[RAND_INT(0, 0)])};
+    Sphere sphere = {center, radius, &(resourcePool.materials[rand_int(0, 0)])};
     scene_add_sphere(&scene, sphere);
 }
 

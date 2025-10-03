@@ -159,6 +159,7 @@ TRAYRACING_DECL float scene_render(Scene const *const scene, Frame *const frame)
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <time.h>
+#include <stdlib.h>
 
 #ifndef PRECISION
 #define PRECISION 1e-4f
@@ -193,6 +194,16 @@ typedef struct Hit {
     Vec3 normal;
     Material const *material;
 } Hit;
+
+static inline float rand_float(float lowerBound, float upperBound)
+{
+    return (upperBound - lowerBound) * ((float)rand() / RAND_MAX) + lowerBound;
+}
+
+static inline int rand_int(int lowerBound, int upperBound)
+{
+    return rand() % (upperBound - lowerBound + 1) + lowerBound;
+}
 
 static inline Vec2 vec2_zero(void)
 {
