@@ -117,7 +117,7 @@ TRAYRACING_DECL Vec2 vec2_sub(Vec2 a, Vec2 b);
 TRAYRACING_DECL Vec2 vec2_scale(float f, Vec2 a);
 TRAYRACING_DECL Vec2 vec2_mul(Vec2 a, Vec2 b);
 TRAYRACING_DECL float vec2_dot(Vec2 a, Vec2 b);
-TRAYRACING_DECL float vec2_lengthSqr(Vec2 a);
+TRAYRACING_DECL float vec2_length_sqr(Vec2 a);
 TRAYRACING_DECL float vec2_length(Vec2 a);
 TRAYRACING_DECL Vec2 vec2_norm(Vec2 a);
 TRAYRACING_DECL float vec2_dist(Vec2 a, Vec2 b);
@@ -129,7 +129,7 @@ TRAYRACING_DECL Vec3 vec3_scale(float f, Vec3 a);
 TRAYRACING_DECL Vec3 vec3_mul(Vec3 a, Vec3 b);
 TRAYRACING_DECL float vec3_dot(Vec3 a, Vec3 b);
 TRAYRACING_DECL Vec3 vec3_cross(Vec3 a, Vec3 b);
-TRAYRACING_DECL float vec3_lengthSqr(Vec3 a);
+TRAYRACING_DECL float vec3_length_sqr(Vec3 a);
 TRAYRACING_DECL float vec3_length(Vec3 a);
 TRAYRACING_DECL Vec3 vec3_norm(Vec3 a);
 TRAYRACING_DECL float vec3_dist(Vec3 a, Vec3 b);
@@ -254,14 +254,14 @@ float vec2_dot(Vec2 a, Vec2 b)
     return a.x * b.x + a.y * b.y;
 }
 
-float vec2_lengthSqr(Vec2 a)
+float vec2_length_sqr(Vec2 a)
 {
     return a.x * a.x + a.y * a.y;
 }
 
 float vec2_length(Vec2 a)
 {
-    return sqrtf(vec2_lengthSqr(a));
+    return sqrtf(vec2_length_sqr(a));
 }
 
 Vec2 vec2_norm(Vec2 a)
@@ -353,14 +353,14 @@ Vec3 vec3_cross(Vec3 a, Vec3 b)
                     .z = a.x * b.y - a.y * b.x};
 }
 
-float vec3_lengthSqr(Vec3 a)
+float vec3_length_sqr(Vec3 a)
 {
     return a.x * a.x + a.y * a.y + a.z * a.z;
 }
 
 float vec3_length(Vec3 a)
 {
-    return sqrtf(vec3_lengthSqr(a));
+    return sqrtf(vec3_length_sqr(a));
 }
 
 Vec3 vec3_norm(Vec3 a)
@@ -543,7 +543,7 @@ static Hit intersect(Sphere const *const sphere, Ray const *const ray)
 {
     Vec3 const dist = vec3_sub(ray->origin, sphere->center);
     float const b = 2.0f * vec3_dot(dist, ray->direction);
-    float const c = vec3_lengthSqr(dist) - sphere->radius * sphere->radius;
+    float const c = vec3_length_sqr(dist) - sphere->radius * sphere->radius;
     float const disc = b * b - 4.0f * c;
 
     Hit hit;
