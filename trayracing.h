@@ -114,7 +114,7 @@ extern "C" {
 TRAYRACING_DECL Vec2 vec2_inv(Vec2 a);
 TRAYRACING_DECL Vec2 vec2_add(Vec2 a, Vec2 b);
 TRAYRACING_DECL Vec2 vec2_sub(Vec2 a, Vec2 b);
-TRAYRACING_DECL Vec2 vec2_mulf(float f, Vec2 a);
+TRAYRACING_DECL Vec2 vec2_scale(float f, Vec2 a);
 TRAYRACING_DECL Vec2 vec2_mul(Vec2 a, Vec2 b);
 TRAYRACING_DECL float vec2_dot(Vec2 a, Vec2 b);
 TRAYRACING_DECL float vec2_lengthSqr(Vec2 a);
@@ -125,7 +125,7 @@ TRAYRACING_DECL float vec2_dist(Vec2 a, Vec2 b);
 TRAYRACING_DECL Vec3 vec3_inv(Vec3 a);
 TRAYRACING_DECL Vec3 vec3_add(Vec3 a, Vec3 b);
 TRAYRACING_DECL Vec3 vec3_sub(Vec3 a, Vec3 b);
-TRAYRACING_DECL Vec3 vec3_mulf(float f, Vec3 a);
+TRAYRACING_DECL Vec3 vec3_scale(float f, Vec3 a);
 TRAYRACING_DECL Vec3 vec3_mul(Vec3 a, Vec3 b);
 TRAYRACING_DECL float vec3_dot(Vec3 a, Vec3 b);
 TRAYRACING_DECL Vec3 vec3_cross(Vec3 a, Vec3 b);
@@ -239,7 +239,7 @@ Vec2 vec2_sub(Vec2 a, Vec2 b)
     return LITERAL(Vec2){.x = a.x - b.x, .y = a.y - b.y};
 }
 
-Vec2 vec2_mulf(float f, Vec2 a)
+Vec2 vec2_scale(float f, Vec2 a)
 {
     return LITERAL(Vec2){.x = f * a.x, .y = f * a.y};
 }
@@ -268,7 +268,7 @@ Vec2 vec2_norm(Vec2 a)
 {
     float const len = vec2_length(a);
 
-    return (len > PRECISION) ? vec2_mulf(1.0f / len, a) : vec2_zero();
+    return (len > PRECISION) ? vec2_scale(1.0f / len, a) : vec2_zero();
 }
 
 float vec2_dist(Vec2 a, Vec2 b)
@@ -331,7 +331,7 @@ Vec3 vec3_sub(Vec3 a, Vec3 b)
     return LITERAL(Vec3){.x = a.x - b.x, .y = a.y - b.y, .z = a.z - b.z};
 }
 
-Vec3 vec3_mulf(float f, Vec3 a)
+Vec3 vec3_scale(float f, Vec3 a)
 {
     return LITERAL(Vec3){.x = f * a.x, .y = f * a.y, .z = f * a.z };
 }
@@ -367,7 +367,7 @@ Vec3 vec3_norm(Vec3 a)
 {
     float const len = vec3_length(a);
 
-    return (len > PRECISION) ? vec3_mulf(1.0f / len, a) : vec3_zero();
+    return (len > PRECISION) ? vec3_scale(1.0f / len, a) : vec3_zero();
 }
 
 float vec3_dist(Vec3 a, Vec3 b)
@@ -377,7 +377,7 @@ float vec3_dist(Vec3 a, Vec3 b)
 
 Vec3 vec3_reflect(Vec3 n, Vec3 v)
 {
-    return vec3_sub(v, vec3_mulf(2.0f,  vec3_mulf(vec3_dot(n, v),  n)));
+    return vec3_sub(v, vec3_scale(2.0f,  vec3_scale(vec3_dot(n, v),  n)));
 }
 
 Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx)
@@ -405,9 +405,9 @@ Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx)
     }
 
     return vec3_add(vec3_add(
-                vec3_add(vec3_mulf(vec3_invRefrIdxX, i), vec3_mulf(cosa * vec3_invRefrIdxX - sqrtf(discX), n)),
-                vec3_add(vec3_mulf(vec3_invRefrIdxY, i), vec3_mulf(cosa * vec3_invRefrIdxY - sqrtf(discY), n))),
-                vec3_add(vec3_mulf(vec3_invRefrIdxZ, i), vec3_mulf(cosa * vec3_invRefrIdxZ - sqrtf(discZ), n)));
+                vec3_add(vec3_scale(vec3_invRefrIdxX, i), vec3_scale(cosa * vec3_invRefrIdxX - sqrtf(discX), n)),
+                vec3_add(vec3_scale(vec3_invRefrIdxY, i), vec3_scale(cosa * vec3_invRefrIdxY - sqrtf(discY), n))),
+                vec3_add(vec3_scale(vec3_invRefrIdxZ, i), vec3_scale(cosa * vec3_invRefrIdxZ - sqrtf(discZ), n)));
 }
 
 Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fov)
@@ -418,15 +418,15 @@ Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fov)
     camera.lookat = lookat;
     Vec3 const w = vec3_sub(eye, camera.lookat);
     float const windowSize = vec3_length(w) * tanf(fov * 0.5f);
-    camera.right = vec3_mulf(windowSize, vec3_norm(vec3_cross(up, w)));
-    camera.up = vec3_mulf(windowSize, vec3_norm(vec3_cross(w, camera.right)));
+    camera.right = vec3_scale(windowSize, vec3_norm(vec3_cross(up, w)));
+    camera.up = vec3_scale(windowSize, vec3_norm(vec3_cross(w, camera.right)));
 
     return camera;
 }
 
 static Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight)
 {
-    Vec3 const dir = vec3_sub(vec3_add(vec3_add(camera->lookat, vec3_mulf((2.0f * (x + 0.5f) / screenWidth - 1), camera->right)), vec3_mulf((2.0f * (y + 0.5f) / screenHeight - 1), camera->up)), camera->eye);
+    Vec3 const dir = vec3_sub(vec3_add(vec3_add(camera->lookat, vec3_scale((2.0f * (x + 0.5f) / screenWidth - 1), camera->right)), vec3_scale((2.0f * (y + 0.5f) / screenHeight - 1), camera->up)), camera->eye);
     return LITERAL(Ray){camera->eye, vec3_norm(dir)};
 }
 
@@ -469,7 +469,7 @@ static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 
         {
             return outRadiance;
         }
-        outRadiance = vec3_mulf(NdotL, vec3_mul(inRadiance, material->diffuse));
+        outRadiance = vec3_scale(NdotL, vec3_mul(inRadiance, material->diffuse));
         Vec3 const halfway = vec3_norm(vec3_add(toEye, toLight));
         float const NdotH = vec3_dot(normal, halfway);
         if (NdotH < 0)
@@ -477,13 +477,13 @@ static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 
             return outRadiance;
         }
 
-        return vec3_add(outRadiance, vec3_mulf(powf(NdotH, material->shininess), vec3_mul(inRadiance, material->specular)));
+        return vec3_add(outRadiance, vec3_scale(powf(NdotH, material->shininess), vec3_mul(inRadiance, material->specular)));
     }
     if (material->flags & (MT_REFLECTIVE | MT_REFRACTIVE))
     {
         float const cosa = fabsf(vec3_dot(normal, toEye));
 
-        return vec3_add(material->minReflectance, vec3_mulf(powf(1.0f - cosa, 5), vec3_sub(vec3_one(), material->minReflectance)));
+        return vec3_add(material->minReflectance, vec3_scale(powf(1.0f - cosa, 5), vec3_sub(vec3_one(), material->minReflectance)));
     }
 
     return vec3_zero();
@@ -561,8 +561,8 @@ static Hit intersect(Sphere const *const sphere, Ray const *const ray)
     float const t2 = -0.5f * (b + sqrt_disc);
 
     hit.t = (t2 > 0.0f) ? t2 : t1;
-    hit.position = vec3_add(ray->origin, vec3_mulf(hit.t, ray->direction));
-    hit.normal = vec3_mulf(1.0f / sphere->radius, vec3_sub(hit.position, sphere->center));
+    hit.position = vec3_add(ray->origin, vec3_scale(hit.t, ray->direction));
+    hit.normal = vec3_scale(1.0f / sphere->radius, vec3_sub(hit.position, sphere->center));
     hit.material = sphere->material;
 
     return hit;
@@ -654,7 +654,7 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
         for (uint8_t i = 0; i < scene->currentLightCount; ++i)
         {
             Vec3 const toLight = vec3_norm(vec3_inv(scene->lights[i].direction));
-            Ray const shadowRay = {vec3_add(hit.position, vec3_mulf(PRECISION, hit.normal)), toLight};
+            Ray const shadowRay = {vec3_add(hit.position, vec3_scale(PRECISION, hit.normal)), toLight};
             Hit const shadowHit = firstIntersect(scene, &shadowRay);
             if (shadowHit.t < 0)
             {
@@ -669,13 +669,13 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
         if (hit.material->flags & MT_REFLECTIVE)
         {
             Vec3 const reflectedDirection = vec3_norm(vec3_reflect(hit.normal, ray->direction));
-            Ray const reflectedRay = {vec3_add(hit.position, vec3_mulf(PRECISION, hit.normal)), reflectedDirection};
+            Ray const reflectedRay = {vec3_add(hit.position, vec3_scale(PRECISION, hit.normal)), reflectedDirection};
             outRadiance = vec3_add(outRadiance, vec3_mul(reflectance, trace(scene, &reflectedRay, depth + 1)));
         }
         if (hit.material->flags & MT_REFRACTIVE)
         {
             Vec3 const refractedDirection = vec3_norm(vec3_refract(hit.normal, ray->direction, hit.material->refrIdx));
-            Ray const refractedRay = {vec3_sub(hit.position, vec3_mulf(PRECISION, hit.normal)), refractedDirection};
+            Ray const refractedRay = {vec3_sub(hit.position, vec3_scale(PRECISION, hit.normal)), refractedDirection};
             outRadiance = vec3_add(outRadiance, vec3_mul(vec3_sub(vec3_one(), reflectance), trace(scene, &refractedRay, depth + 1)));
         }
     }
