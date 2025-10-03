@@ -161,7 +161,7 @@ TRAYRACING_DECL float scene_render(Scene const *const scene, Frame *const frame)
 #include <time.h>
 
 #ifndef PRECISION
-#define PRECISION 1e-7f
+#define PRECISION 1e-4f
 #endif
 
 #ifndef M_PIf
@@ -193,6 +193,36 @@ typedef struct Hit {
     Vec3 normal;
     Material const *material;
 } Hit;
+
+static inline Vec2 vec2_zero(void)
+{
+    return LITERAL(Vec2){.x = 0.0f, .y = 0.0f};
+}
+
+static inline Vec2 vec2_one(void)
+{
+    return LITERAL(Vec2){.x = 1.0f, .y = 1.0f};
+}
+
+static inline Vec2 vec2_unit_x(void)
+{
+    return LITERAL(Vec2){.x = 1.0f, .y = 0.0f};
+}
+
+static inline Vec2 vec2_unit_y(void)
+{
+    return LITERAL(Vec2){.x = 0.0f, .y = 1.0f};
+}
+
+static inline Vec2 vec2_negative_unit_x(void)
+{
+    return LITERAL(Vec2){.x = -1.0f, .y = 0.0f};
+}
+
+static inline Vec2 vec2_negative_unit_y(void)
+{
+    return LITERAL(Vec2){.x = 0.0f, .y = -1.0f};
+}
 
 Vec2 vec2_inv(Vec2 a)
 {
@@ -238,7 +268,7 @@ Vec2 vec2_norm(Vec2 a)
 {
     float const len = vec2_length(a);
 
-    return (len > PRECISION) ? vec2_mulf(1.0f / len, a) : a;
+    return (len > PRECISION) ? vec2_mulf(1.0f / len, a) : vec2_zero();
 }
 
 float vec2_dist(Vec2 a, Vec2 b)
@@ -246,34 +276,44 @@ float vec2_dist(Vec2 a, Vec2 b)
     return vec2_length(vec2_sub(b, a));
 }
 
-static inline Vec2 vec2_zero(void)
+static inline Vec3 vec3_zero(void)
 {
-    return LITERAL(Vec2){.x = 0.0f, .y = 0.0f};
+    return LITERAL(Vec3){.x = 0.0f, .y = 0.0f, .z = 0.0f};
 }
 
-static inline Vec2 vec2_one(void)
+static inline Vec3 vec3_one(void)
 {
-    return LITERAL(Vec2){.x = 1.0f, .y = 1.0f};
+    return LITERAL(Vec3){.x = 1.0f, .y = 1.0f, .z = 1.0f};
 }
 
-static inline Vec2 vec2_unit_x(void)
+static inline Vec3 vec3_unit_x(void)
 {
-    return LITERAL(Vec2){.x = 1.0f, .y = 0.0f};
+    return LITERAL(Vec3){.x = 1.0f, .y = 0.0f, .z = 0.0f};
 }
 
-static inline Vec2 vec2_unit_y(void)
+static inline Vec3 vec3_unit_y(void)
 {
-    return LITERAL(Vec2){.x = 0.0f, .y = 1.0f};
+    return LITERAL(Vec3){.x = 0.0f, .y = 1.0f, .z = 0.0f};
 }
 
-static inline Vec2 vec2_negative_unit_x(void)
+static inline Vec3 vec3_unit_z(void)
 {
-    return LITERAL(Vec2){.x = -1.0f, .y = 0.0f};
+    return LITERAL(Vec3){.x = 0.0f, .y = 0.0f, .z = 1.0f};
 }
 
-static inline Vec2 vec2_negative_unit_y(void)
+static inline Vec3 vec3_negative_unit_x(void)
 {
-    return LITERAL(Vec2){.x = 0.0f, .y = -1.0f};
+    return LITERAL(Vec3){.x = -1.0f, .y = 0.0f, .z = 0.0f};
+}
+
+static inline Vec3 vec3_negative_unit_y(void)
+{
+    return LITERAL(Vec3){.x = 0.0f, .y = -1.0f, .z = 0.0f};
+}
+
+static inline Vec3 vec3_negative_unit_z(void)
+{
+    return LITERAL(Vec3){.x = 0.0f, .y = 0.0f, .z = -1.0f};
 }
 
 Vec3 vec3_inv(Vec3 a)
@@ -327,7 +367,7 @@ Vec3 vec3_norm(Vec3 a)
 {
     float const len = vec3_length(a);
 
-    return (len > PRECISION) ? vec3_mulf(1.0f / len, a) : a;
+    return (len > PRECISION) ? vec3_mulf(1.0f / len, a) : vec3_zero();
 }
 
 float vec3_dist(Vec3 a, Vec3 b)
@@ -368,46 +408,6 @@ Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx)
                 vec3_add(vec3_mulf(vec3_invRefrIdxX, i), vec3_mulf(cosa * vec3_invRefrIdxX - sqrtf(discX), n)),
                 vec3_add(vec3_mulf(vec3_invRefrIdxY, i), vec3_mulf(cosa * vec3_invRefrIdxY - sqrtf(discY), n))),
                 vec3_add(vec3_mulf(vec3_invRefrIdxZ, i), vec3_mulf(cosa * vec3_invRefrIdxZ - sqrtf(discZ), n)));
-}
-
-static inline Vec3 vec3_zero(void)
-{
-    return LITERAL(Vec3){.x = 0.0f, .y = 0.0f, .z = 0.0f};
-}
-
-static inline Vec3 vec3_one(void)
-{
-    return LITERAL(Vec3){.x = 1.0f, .y = 1.0f, .z = 1.0f};
-}
-
-static inline Vec3 vec3_unit_x(void)
-{
-    return LITERAL(Vec3){.x = 1.0f, .y = 0.0f, .z = 0.0f};
-}
-
-static inline Vec3 vec3_unit_y(void)
-{
-    return LITERAL(Vec3){.x = 0.0f, .y = 1.0f, .z = 0.0f};
-}
-
-static inline Vec3 vec3_unit_z(void)
-{
-    return LITERAL(Vec3){.x = 0.0f, .y = 0.0f, .z = 1.0f};
-}
-
-static inline Vec3 vec3_negative_unit_x(void)
-{
-    return LITERAL(Vec3){.x = -1.0f, .y = 0.0f, .z = 0.0f};
-}
-
-static inline Vec3 vec3_negative_unit_y(void)
-{
-    return LITERAL(Vec3){.x = 0.0f, .y = -1.0f, .z = 0.0f};
-}
-
-static inline Vec3 vec3_negative_unit_z(void)
-{
-    return LITERAL(Vec3){.x = 0.0f, .y = 0.0f, .z = -1.0f};
 }
 
 Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fov)
@@ -654,7 +654,7 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
         for (uint8_t i = 0; i < scene->currentLightCount; ++i)
         {
             Vec3 const toLight = vec3_norm(vec3_inv(scene->lights[i].direction));
-            Ray const shadowRay = {vec3_add(hit.position, vec3_mulf(1e-3f, hit.normal)), toLight};
+            Ray const shadowRay = {vec3_add(hit.position, vec3_mulf(PRECISION, hit.normal)), toLight};
             Hit const shadowHit = firstIntersect(scene, &shadowRay);
             if (shadowHit.t < 0)
             {
@@ -669,13 +669,13 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
         if (hit.material->flags & MT_REFLECTIVE)
         {
             Vec3 const reflectedDirection = vec3_norm(vec3_reflect(hit.normal, ray->direction));
-            Ray const reflectedRay = {vec3_add(hit.position, vec3_mulf(1e-3f, hit.normal)), reflectedDirection};
+            Ray const reflectedRay = {vec3_add(hit.position, vec3_mulf(PRECISION, hit.normal)), reflectedDirection};
             outRadiance = vec3_add(outRadiance, vec3_mul(reflectance, trace(scene, &reflectedRay, depth + 1)));
         }
         if (hit.material->flags & MT_REFRACTIVE)
         {
             Vec3 const refractedDirection = vec3_norm(vec3_refract(hit.normal, ray->direction, hit.material->refrIdx));
-            Ray const refractedRay = {vec3_sub(hit.position, vec3_mulf(1e-3f, hit.normal)), refractedDirection};
+            Ray const refractedRay = {vec3_sub(hit.position, vec3_mulf(PRECISION, hit.normal)), refractedDirection};
             outRadiance = vec3_add(outRadiance, vec3_mul(vec3_sub(vec3_one(), reflectance), trace(scene, &refractedRay, depth + 1)));
         }
     }
