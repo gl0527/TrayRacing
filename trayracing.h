@@ -169,14 +169,6 @@ TRAYRACING_DECL float scene_render(Scene const *const scene, Frame *const frame)
 #define M_PIf 3.141593f
 #endif
 
-#ifndef DEG2RAD
-#define DEG2RAD (M_PIf/180.0f)
-#endif
-
-#ifndef RAD2DEG
-#define RAD2DEG (180.0f/M_PIf)
-#endif
-
 #ifdef __cplusplus
 #define LITERAL(x) x
 #else
@@ -203,6 +195,16 @@ static inline float rand_float(float lowerBound, float upperBound)
 static inline int rand_int(int lowerBound, int upperBound)
 {
     return rand() % (upperBound - lowerBound + 1) + lowerBound;
+}
+
+static inline float deg2rad(float f)
+{
+    return f * (M_PIf / 180.0f);
+}
+
+static inline float rad2deg(float f)
+{
+    return f * (180.0f / M_PIf);
 }
 
 static inline Vec2 vec2_zero(void)
