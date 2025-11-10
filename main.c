@@ -44,7 +44,8 @@ void onInitialization(void) {
     float fov = deg2rad(60.0f);
     Vec3 ambient = {.x = 0.5f, .y = 0.6f, .z = 0.8f};
 
-    scene = scene_create(eye, up, lookat, fov, ambient);
+    Camera camera = camera_create(eye, lookat, up, fov);
+    scene = scene_create(camera, ambient);
 
     Vec3 lightDir = {.x = -1.0f, .y = -1.0f, .z = -1.0f};
     Light light = {vec3_norm(lightDir), {.r = 0.8f, .g = 0.8f, .b = 0.8f}};

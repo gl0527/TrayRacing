@@ -143,7 +143,7 @@ TRAYRACING_DECL Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specul
 TRAYRACING_DECL ResourcePool resourcepool_create(void);
 TRAYRACING_DECL void resourcepool_add_material(ResourcePool *const pResourcePool, Material material);
 
-TRAYRACING_DECL Scene scene_create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La);
+TRAYRACING_DECL Scene scene_create(Camera cam, Vec3 La);
 TRAYRACING_DECL void scene_add_sphere(Scene *const scene, Sphere sphere);
 TRAYRACING_DECL void scene_add_light(Scene *const scene, Light light);
 TRAYRACING_DECL float scene_render(Scene const *const scene, Frame *const frame);
@@ -597,10 +597,8 @@ void resourcepool_add_material(ResourcePool *const pResourcePool, Material mater
     }
 }
 
-Scene scene_create(Vec3 eye, Vec3 up, Vec3 lookat, float fov, Vec3 La)
+Scene scene_create(Camera cam, Vec3 La)
 {
-    Camera cam = camera_create(eye, lookat, up, fov);
-
     Scene scene;
 
     scene.currentSphereCount = 0;
