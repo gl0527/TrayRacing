@@ -437,7 +437,7 @@ Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fov)
     return camera;
 }
 
-static Ray GetRay(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight)
+static Ray camera_get_ray(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight)
 {
     Vec3 const dir = vec3_sub(vec3_add(vec3_add(camera->lookat, vec3_scale((2.0f * (x + 0.5f) / screenWidth - 1), camera->right)), vec3_scale((2.0f * (y + 0.5f) / screenHeight - 1), camera->up)), camera->eye);
     return LITERAL(Ray){camera->eye, vec3_norm(dir)};
@@ -472,7 +472,7 @@ Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specular, float shinin
     return material;
 }
 
-static Vec3 shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
+static Vec3 material_shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
 {
     if (material->flags & MT_ROUGH)
     {
@@ -552,7 +552,7 @@ static Material material_copper(void)
     return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE);
 }
 
-static Hit intersect(Sphere const *const sphere, Ray const *const ray)
+static Hit sphere_intersect(Sphere const *const sphere, Ray const *const ray)
 {
     Vec3 const dist = vec3_sub(ray->origin, sphere->center);
     float const b = 2.0f * vec3_dot(dist, ray->direction);
@@ -623,13 +623,13 @@ void scene_add_light(Scene *const scene, Light light)
     }
 }
 
-static Hit firstIntersect(Scene const *const scene, Ray const *const ray)
+static Hit scene_raycast(Scene const *const scene, Ray const *const ray)
 {
     Hit bestHit;
     bestHit.t = -1.0f;
     for (uint8_t i = 0; i < scene->currentSphereCount; ++i)
     {
-        Hit const hit = intersect(&(scene->spheres[i]), ray);
+        Hit const hit = sphere_intersect(&(scene->spheres[i]), ray);
         if (hit.t > 0 && (bestHit.t < 0 || hit.t < bestHit.t))
         {
             bestHit = hit;
@@ -643,14 +643,14 @@ static Hit firstIntersect(Scene const *const scene, Ray const *const ray)
     return bestHit;
 }
 
-static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
+static Vec3 scene_raytrace(Scene const *const scene, Ray const *const ray, uint8_t depth)
 {
     if (depth > 5)
     {
         return scene->ambientLight;
     }
 
-    Hit const hit = firstIntersect(scene, ray);
+    Hit const hit = scene_raycast(scene, ray);
     if (hit.t < 0)
     {
         return scene->ambientLight;
@@ -666,28 +666,28 @@ static Vec3 trace(Scene const *const scene, Ray const *const ray, uint8_t depth)
         {
             Vec3 const toLight = vec3_norm(vec3_inv(scene->lights[i].direction));
             Ray const shadowRay = {vec3_add(hit.position, vec3_scale(PRECISION, hit.normal)), toLight};
-            Hit const shadowHit = firstIntersect(scene, &shadowRay);
+            Hit const shadowHit = scene_raycast(scene, &shadowRay);
             if (shadowHit.t < 0)
             {
-                outRadiance = vec3_add(outRadiance, shade(hit.material, hit.normal, viewDir, toLight, scene->lights[i].exitance));
+                outRadiance = vec3_add(outRadiance, material_shade(hit.material, hit.normal, viewDir, toLight, scene->lights[i].exitance));
             }
         }
     }
     if (hit.material->flags & (MT_REFLECTIVE | MT_REFRACTIVE))
     {
-        Vec3 const reflectance = shade(hit.material, hit.normal, viewDir, vec3_zero(), vec3_zero());
+        Vec3 const reflectance = material_shade(hit.material, hit.normal, viewDir, vec3_zero(), vec3_zero());
 
         if (hit.material->flags & MT_REFLECTIVE)
         {
             Vec3 const reflectedDirection = vec3_norm(vec3_reflect(hit.normal, ray->direction));
             Ray const reflectedRay = {vec3_add(hit.position, vec3_scale(PRECISION, hit.normal)), reflectedDirection};
-            outRadiance = vec3_add(outRadiance, vec3_mul(reflectance, trace(scene, &reflectedRay, depth + 1)));
+            outRadiance = vec3_add(outRadiance, vec3_mul(reflectance, scene_raytrace(scene, &reflectedRay, depth + 1)));
         }
         if (hit.material->flags & MT_REFRACTIVE)
         {
             Vec3 const refractedDirection = vec3_norm(vec3_refract(hit.normal, ray->direction, hit.material->refrIdx));
             Ray const refractedRay = {vec3_sub(hit.position, vec3_scale(PRECISION, hit.normal)), refractedDirection};
-            outRadiance = vec3_add(outRadiance, vec3_mul(vec3_sub(vec3_one(), reflectance), trace(scene, &refractedRay, depth + 1)));
+            outRadiance = vec3_add(outRadiance, vec3_mul(vec3_sub(vec3_one(), reflectance), scene_raytrace(scene, &refractedRay, depth + 1)));
         }
     }
 
@@ -702,8 +702,8 @@ float scene_render(Scene const *const scene, Frame *const frame)
     {
         for (uint32_t x = 0; x < FRAME_WIDTH; ++x)
         {
-            Ray const ray = GetRay(&(scene->camera), x, y, FRAME_WIDTH, FRAME_HEIGHT);
-            frame->data[y * FRAME_WIDTH + x] = trace(scene, &ray, 0);
+            Ray const ray = camera_get_ray(&(scene->camera), x, y, FRAME_WIDTH, FRAME_HEIGHT);
+            frame->data[y * FRAME_WIDTH + x] = scene_raytrace(scene, &ray, 0);
         }
     }
 
