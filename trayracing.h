@@ -2,6 +2,7 @@
 #define TRAYRACING_H
 
 #include <stdint.h>
+#include <stdio.h>
 
 #ifndef TRAYRACING_DECL
 #ifdef TRAYRACING_STATIC
@@ -142,6 +143,8 @@ TRAYRACING_DECL Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specul
 
 TRAYRACING_DECL ResourcePool resourcepool_create(void);
 TRAYRACING_DECL void resourcepool_add_material(ResourcePool *const pResourcePool, Material material);
+
+TRAYRACING_DECL void frame_save_to_file(Frame const *const frame);
 
 TRAYRACING_DECL Scene scene_create(Camera cam, Vec3 La);
 TRAYRACING_DECL void scene_add_sphere(Scene *const scene, Sphere sphere);
@@ -595,6 +598,43 @@ void resourcepool_add_material(ResourcePool *const pResourcePool, Material mater
     if (pResourcePool->currentMaterialCount < MAX_MATERIAL_COUNT) {
         pResourcePool->materials[pResourcePool->currentMaterialCount++] = material;
     }
+}
+
+void frame_save_to_file(Frame const *const frame)
+{
+    static uint16_t counter = 0;
+
+    // Define upper limit to the number of screenshots.
+    if (counter > 999) {
+        printf("No more screenshots will be taken!\n");
+        return;
+    }
+
+    // Assemble output file name.
+    char fname[32];
+    snprintf(fname, 32, "screenshot_%03d.ppm", counter++);
+
+    // Open file.
+    FILE* file = fopen(fname, "w");
+
+    // Write meta data into file.
+    fprintf(file, "P6\n%d %d\n255\n", FRAME_WIDTH, FRAME_HEIGHT);
+
+    // Write pixel data into file, from the top left pixel to the bottom right pixel.
+    for (int32_t y = FRAME_HEIGHT - 1; y >= 0; --y)
+    {
+        for (int32_t x = 0; x < FRAME_WIDTH; ++x)
+        {
+            Vec3 const *const pixel = &(frame->data[y * FRAME_WIDTH + x]);
+            uint8_t data[3] = { pixel->r * 255, pixel->g * 255, pixel->b * 255 };
+            fwrite(data, 1, 3, file);
+        }
+    }
+
+    // Close file.
+    fclose(file);
+
+    printf("Screenshot is written to \'%s\'.\n", fname);
 }
 
 Scene scene_create(Camera cam, Vec3 La)

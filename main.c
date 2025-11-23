@@ -90,9 +90,13 @@ void onKeyboard(unsigned char key, int x, int y) {
 
 // Billentyuzet esemenyeket lekezelo fuggveny (felengedes)
 void onKeyboardUp(unsigned char key, int x, int y) {
-    UNUSED(key);
     UNUSED(x);
     UNUSED(y);
+
+    if (key == 32)
+    {
+        frame_save_to_file(&frame);
+    }
 }
 
 // Eger esemenyeket lekezelo fuggveny
