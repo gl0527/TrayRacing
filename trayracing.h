@@ -602,17 +602,18 @@ void resourcepool_add_material(ResourcePool *const pResourcePool, Material mater
 
 void frame_save_to_file(Frame const *const frame)
 {
-    static uint16_t counter = 0;
-
-    // Define upper limit to the number of screenshots.
-    if (counter > 999) {
-        printf("No more screenshots will be taken!\n");
-        return;
-    }
-
     // Assemble output file name.
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+
     char fname[32];
-    snprintf(fname, 32, "screenshot_%03d.ppm", counter++);
+    snprintf(fname, sizeof(fname), "screenshot_%d%d%dT%d%d%d.ppm",
+            t->tm_year + 1900,
+            t->tm_mon + 1,
+            t->tm_mday,
+            t->tm_hour,
+            t->tm_min,
+            t->tm_sec);
 
     // Open file.
     FILE* file = fopen(fname, "w");
