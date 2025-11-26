@@ -606,8 +606,8 @@ void frame_save_to_file(Frame const *const frame)
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
 
-    char fname[32];
-    snprintf(fname, sizeof(fname), "%d%d%dT%d%d%d.ppm",
+    char fname[64];
+    snprintf(fname, sizeof(fname), "screenshot_%d%02d%02dT%02d%02d%02d.ppm",
             t->tm_year + 1900,
             t->tm_mon + 1,
             t->tm_mday,
