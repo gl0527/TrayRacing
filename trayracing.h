@@ -607,7 +607,7 @@ void frame_save_to_file(Frame const *const frame)
     struct tm *t = localtime(&now);
 
     char fname[32];
-    snprintf(fname, sizeof(fname), "screenshot_%d%d%dT%d%d%d.ppm",
+    snprintf(fname, sizeof(fname), "%d%d%dT%d%d%d.ppm",
             t->tm_year + 1900,
             t->tm_mon + 1,
             t->tm_mday,
@@ -628,14 +628,14 @@ void frame_save_to_file(Frame const *const frame)
         {
             Vec3 const *const pixel = &(frame->data[y * FRAME_WIDTH + x]);
             uint8_t data[3] = { pixel->r * 255, pixel->g * 255, pixel->b * 255 };
-            fwrite(data, 1, 3, file);
+            fwrite(data, 1, sizeof(data), file);
         }
     }
 
     // Close file.
     fclose(file);
 
-    printf("Screenshot is written to \'%s\'.\n", fname);
+    printf("Screenshot is saved as \'%s\'.\n", fname);
 }
 
 Scene scene_create(Camera cam, Vec3 La)
