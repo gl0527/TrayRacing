@@ -200,6 +200,11 @@ static inline int rand_int(int lowerBound, int upperBound)
     return rand() % (upperBound - lowerBound + 1) + lowerBound;
 }
 
+static inline float clamp(float v, float lowerBound, float upperBound)
+{
+    return v < lowerBound ? lowerBound : v > upperBound ? upperBound : v;
+}
+
 static inline float deg2rad(float f)
 {
     return f * (M_PIf / 180.0f);
@@ -627,7 +632,13 @@ void frame_save_to_file(Frame const *const frame)
         for (int32_t x = 0; x < FRAME_WIDTH; ++x)
         {
             Vec3 const *const pixel = &(frame->data[y * FRAME_WIDTH + x]);
-            uint8_t data[3] = { pixel->r * 255, pixel->g * 255, pixel->b * 255 };
+
+            uint8_t const r = clamp(pixel->r, 0.0f, 1.0f) * 255;
+            uint8_t const g = clamp(pixel->g, 0.0f, 1.0f) * 255;
+            uint8_t const b = clamp(pixel->b, 0.0f, 1.0f) * 255;
+
+            uint8_t data[3] = { r, g, b };
+
             fwrite(data, 1, sizeof(data), file);
         }
     }
