@@ -621,7 +621,7 @@ void frame_save_to_file(Frame const *const frame)
             t->tm_sec);
 
     // Open file.
-    FILE* file = fopen(fname, "w");
+    FILE* file = fopen(fname, "wb");
 
     // Write meta data into file.
     fprintf(file, "P6\n%d %d\n255\n", FRAME_WIDTH, FRAME_HEIGHT);
