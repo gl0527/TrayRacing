@@ -608,17 +608,26 @@ void resourcepool_add_material(ResourcePool *const pResourcePool, Material mater
 void frame_save_to_file(Frame const *const frame)
 {
     // Assemble output file name.
+    static uint32_t counter = 0;
+
+    if (counter > 999)
+    {
+        printf("No more screenshots will be written in this session!\n");
+        return;
+    }
+
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
 
     char fname[64];
-    snprintf(fname, sizeof(fname), "screenshot_%d%02d%02dT%02d%02d%02d.ppm",
+    snprintf(fname, sizeof(fname), "screenshot_%d%02d%02dT%02d%02d%02d_%03d.ppm",
             t->tm_year + 1900,
             t->tm_mon + 1,
             t->tm_mday,
             t->tm_hour,
             t->tm_min,
-            t->tm_sec);
+            t->tm_sec,
+            counter++);
 
     // Open file.
     FILE* file = fopen(fname, "wb");
