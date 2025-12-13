@@ -1,5 +1,5 @@
 #define TRAYRACING_IMPLEMENTATION
-#include "trayracing.h"
+#include "trayracing/trayracing.h"
 
 #include <time.h>
 
