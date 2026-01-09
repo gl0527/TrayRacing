@@ -12,11 +12,11 @@ all: $(BIN_FOLDER)/ogl_dbg $(BIN_FOLDER)/ogl_rel $(SCREENSHOTS_FOLDER)
 
 $(BIN_FOLDER)/ogl_dbg: $(EXAMPLES_FOLDER)/legacy_opengl.c $(INCLUDE_FOLDER)/trayracing/trayracing.h
 	@mkdir -p $(@D)
-	@$(CC) -o $@ $^ $(CFLAGS) -I$(INCLUDE_FOLDER) -O0 -g $(LFLAGS)
+	@$(CC) -o $@ $^ $(CFLAGS) -DSCREENSHOTS_FOLDER=$(SCREENSHOTS_FOLDER) -I$(INCLUDE_FOLDER) -O0 -g $(LFLAGS)
 
 $(BIN_FOLDER)/ogl_rel: $(EXAMPLES_FOLDER)/legacy_opengl.c $(INCLUDE_FOLDER)/trayracing/trayracing.h
 	@mkdir -p $(@D)
-	@$(CC) -o $@ $^ $(CFLAGS) -I$(INCLUDE_FOLDER) -O3 -ffast-math -msse -msse2 -mfpmath=sse $(LFLAGS)
+	@$(CC) -o $@ $^ $(CFLAGS) -DSCREENSHOTS_FOLDER=$(SCREENSHOTS_FOLDER) -I$(INCLUDE_FOLDER) -O3 -ffast-math -msse -msse2 -mfpmath=sse $(LFLAGS)
 
 $(SCREENSHOTS_FOLDER):
 	@mkdir -p $(SCREENSHOTS_FOLDER)
