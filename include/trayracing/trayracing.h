@@ -22,9 +22,6 @@
 #define FRAME_HEIGHT 600
 #endif
 
-#define STR2(x) #x
-#define STR(x) STR2(x)
-
 typedef union Vec2 {
     float v[2];
 
@@ -166,7 +163,6 @@ TRAYRACING_DECL float scene_render(Scene const *const scene, Frame *const frame)
 #include <math.h>
 #include <time.h>
 #include <stdlib.h>
-#include <string.h>
 
 #ifndef PRECISION
 #define PRECISION 1e-4f
@@ -620,12 +616,11 @@ void frame_save_to_file(Frame const *const frame)
         return;
     }
 
+    char output_path[256];
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
 
-    char screenshot_absolute_path[256] = STR(SCREENSHOTS_FOLDER);
-    char screenshot_file_name[64];
-    snprintf(screenshot_file_name, sizeof(screenshot_file_name), "screenshot_%d%02d%02dT%02d%02d%02d_%03d.ppm",
+    snprintf(output_path, sizeof(output_path), SCREENSHOTS_FOLDER"screenshot_%d%02d%02dT%02d%02d%02d_%03d.ppm",
             t->tm_year + 1900,
             t->tm_mon + 1,
             t->tm_mday,
@@ -634,11 +629,8 @@ void frame_save_to_file(Frame const *const frame)
             t->tm_sec,
             counter++);
 
-    strcat(screenshot_absolute_path, "/");
-    strcat(screenshot_absolute_path, screenshot_file_name);
-
     // Open file.
-    FILE* file = fopen(screenshot_absolute_path, "wb");
+    FILE* file = fopen(output_path, "wb");
 
     // Write meta data into file.
     fprintf(file, "P6\n%d %d\n255\n", FRAME_WIDTH, FRAME_HEIGHT);
@@ -663,7 +655,7 @@ void frame_save_to_file(Frame const *const frame)
     // Close file.
     fclose(file);
 
-    printf("Screenshot is saved as \'%s\'.\n", screenshot_file_name);
+    printf("Screenshot is saved as \'%s\'.\n", output_path);
 }
 
 Scene scene_create(Camera cam, Vec3 La)
