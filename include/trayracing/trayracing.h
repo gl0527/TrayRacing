@@ -688,16 +688,20 @@ static Hit scene_raycast(Scene const *const scene, Ray const *const ray)
 {
     Hit bestHit;
     bestHit.t = -1.0f;
-    for (uint8_t i = 0; i < scene->currentSphereCount; ++i)
+
+    Sphere const *const spheres = scene->spheres;
+
+    for (uint8_t i = 0, sphereCount = scene->currentSphereCount; i < sphereCount; ++i)
     {
-        Hit const hit = sphere_intersect(&(scene->spheres[i]), ray);
-        if (hit.t > 0 && (bestHit.t < 0 || hit.t < bestHit.t))
+        Hit const hit = sphere_intersect(&spheres[i], ray);
+
+        if (hit.t > 0.0f && (bestHit.t < 0.0f || hit.t < bestHit.t))
         {
             bestHit = hit;
         }
     }
 
-    if (vec3_dot(ray->direction, bestHit.normal) > 0) {
+    if (bestHit.t > 0.0f && vec3_dot(ray->direction, bestHit.normal) > 0.0f) {
         bestHit.normal = vec3_inv(bestHit.normal);
     }
 
