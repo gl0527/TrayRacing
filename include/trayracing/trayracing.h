@@ -560,30 +560,37 @@ static Material material_copper(void)
     return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE);
 }
 
-static Hit sphere_intersect(Sphere const *const sphere, Ray const *const ray)
+static float sphere_intersect_t(Sphere const *const sphere, Ray const *const ray)
 {
     Vec3 const dist = vec3_sub(ray->origin, sphere->center);
     float const b = 2.0f * vec3_dot(dist, ray->direction);
     float const c = vec3_length_sqr(dist) - sphere->radius * sphere->radius;
     float const disc = b * b - 4.0f * c;
 
-    Hit hit;
-    hit.t = -1.0f;
-
     if (disc < 0.0f) {
-        return hit;
+        return -1.0f;
     }
     float const sqrt_disc = sqrtf(disc);
 
     float const t1 = -0.5f * (b - sqrt_disc);
     if (t1 < 0.0f) {
-        return hit;
+        return -1.0f;
     }
     float const t2 = -0.5f * (b + sqrt_disc);
 
-    hit.t = (t2 > 0.0f) ? t2 : t1;
+    return (t2 > 0.0f) ? t2 : t1;
+}
+
+static Hit sphere_intersect(Sphere const *const sphere, Ray const *const ray, float t)
+{
+    Hit hit;
+
+    hit.t = t;
     hit.position = vec3_add(ray->origin, vec3_scale(hit.t, ray->direction));
     hit.normal = vec3_scale(1.0f / sphere->radius, vec3_sub(hit.position, sphere->center));
+    if (vec3_dot(ray->direction, hit.normal) > 0.0f) {
+        hit.normal = vec3_inv(hit.normal);
+    }
     hit.material = sphere->material;
 
     return hit;
@@ -686,26 +693,31 @@ void scene_add_light(Scene *const scene, Light light)
 
 static Hit scene_raycast(Scene const *const scene, Ray const *const ray)
 {
-    Hit bestHit;
-    bestHit.t = -1.0f;
+    float bestT = -1.0f;
+    int bestIdx = -1;
 
     Sphere const *const spheres = scene->spheres;
 
     for (uint8_t i = 0, sphereCount = scene->currentSphereCount; i < sphereCount; ++i)
     {
-        Hit const hit = sphere_intersect(&spheres[i], ray);
+        float const t = sphere_intersect_t(&spheres[i], ray);
 
-        if (hit.t > 0.0f && (bestHit.t < 0.0f || hit.t < bestHit.t))
+        if (t > 0.0f && (bestT < 0.0f || t < bestT))
         {
-            bestHit = hit;
+            bestT = t;
+            bestIdx = i;
         }
     }
 
-    if (bestHit.t > 0.0f && vec3_dot(ray->direction, bestHit.normal) > 0.0f) {
-        bestHit.normal = vec3_inv(bestHit.normal);
+    if (bestT < 0.0f)
+    {
+        Hit hit;
+        hit.t = bestT;
+
+        return hit;
     }
 
-    return bestHit;
+    return sphere_intersect(&spheres[bestIdx], ray, bestT);
 }
 
 static Vec3 scene_raytrace(Scene const *const scene, Ray const *const ray, uint8_t depth)
