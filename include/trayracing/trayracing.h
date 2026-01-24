@@ -571,14 +571,13 @@ static float sphere_intersect_t(Sphere const *const sphere, Ray const *const ray
         return -1.0f;
     }
     float const sqrt_disc = sqrtf(disc);
-
-    float const t1 = -0.5f * (b - sqrt_disc);
-    if (t1 < 0.0f) {
-        return -1.0f;
+    float t = -0.5f * (b + sqrt_disc);
+    if (t > 0.0f) {
+        return t;
     }
-    float const t2 = -0.5f * (b + sqrt_disc);
+    t += sqrt_disc;
 
-    return (t2 > 0.0f) ? t2 : t1;
+    return t > 0.0f ? t : -1.0f;
 }
 
 static Hit sphere_intersect(Sphere const *const sphere, Ray const *const ray, float t)
