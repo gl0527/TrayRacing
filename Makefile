@@ -15,32 +15,20 @@ SCREENSHOTS_FOLDER := $(CURDIR)/screenshots/
 
 all: debug release $(SCREENSHOTS_FOLDER)
 
-debug: $(BUILD_FOLDER)ogl_dbg.o $(BUILD_FOLDER)ogl_dbg.s $(BIN_FOLDER)ogl_dbg
-release: $(BUILD_FOLDER)ogl_rel.o $(BUILD_FOLDER)ogl_rel.s $(BIN_FOLDER)ogl_rel
+debug: $(BUILD_FOLDER)ogl_dbg.o $(BIN_FOLDER)ogl_dbg
+release: $(BUILD_FOLDER)ogl_rel.o $(BIN_FOLDER)ogl_rel
 
-$(BIN_FOLDER)ogl_dbg: $(BUILD_FOLDER)ogl_dbg.o
-	@mkdir -p $(@D)
-	@$(CC) -o $@ $^ $(LFLAGS)
-
-$(BIN_FOLDER)ogl_rel: $(BUILD_FOLDER)ogl_rel.o
+$(BIN_FOLDER)%: $(BUILD_FOLDER)%.o
 	@mkdir -p $(@D)
 	@$(CC) -o $@ $^ $(LFLAGS)
 
 $(BUILD_FOLDER)ogl_dbg.o: $(EXAMPLES_FOLDER)legacy_opengl.c $(INCLUDE_FOLDER)trayracing/trayracing.h
 	@mkdir -p $(@D)
-	@$(CC) -o $@ -c $< $(CFLAGS) $(DBGFLAGS) -DSCREENSHOTS_FOLDER=\"$(SCREENSHOTS_FOLDER)\" -I$(INCLUDE_FOLDER)
+	@$(CC) -o $@ -c $< $(CFLAGS) $(DBGFLAGS) -Wa,-adhln -fverbose-asm -DSCREENSHOTS_FOLDER=\"$(SCREENSHOTS_FOLDER)\" -I$(INCLUDE_FOLDER) > $(BUILD_FOLDER)ogl_dbg.s
 
 $(BUILD_FOLDER)ogl_rel.o: $(EXAMPLES_FOLDER)legacy_opengl.c $(INCLUDE_FOLDER)trayracing/trayracing.h
 	@mkdir -p $(@D)
-	@$(CC) -o $@ -c $< $(CFLAGS) $(RELFLAGS) -DSCREENSHOTS_FOLDER=\"$(SCREENSHOTS_FOLDER)\" -I$(INCLUDE_FOLDER)
-
-$(BUILD_FOLDER)ogl_dbg.s: $(EXAMPLES_FOLDER)legacy_opengl.c $(INCLUDE_FOLDER)trayracing/trayracing.h
-	@mkdir -p $(@D)
-	@$(CC) -o $@ $< $(CFLAGS) $(DBGFLAGS) -S -fverbose-asm -DSCREENSHOTS_FOLDER=\"$(SCREENSHOTS_FOLDER)\" -I$(INCLUDE_FOLDER)
-
-$(BUILD_FOLDER)ogl_rel.s: $(EXAMPLES_FOLDER)legacy_opengl.c $(INCLUDE_FOLDER)trayracing/trayracing.h
-	@mkdir -p $(@D)
-	@$(CC) -o $@ $< $(CFLAGS) $(RELFLAGS) -S -fverbose-asm -DSCREENSHOTS_FOLDER=\"$(SCREENSHOTS_FOLDER)\" -I$(INCLUDE_FOLDER)
+	@$(CC) -o $@ -c $< $(CFLAGS) $(RELFLAGS) -Wa,-adhln -fverbose-asm -DSCREENSHOTS_FOLDER=\"$(SCREENSHOTS_FOLDER)\" -I$(INCLUDE_FOLDER) > $(BUILD_FOLDER)ogl_rel.s
 
 $(SCREENSHOTS_FOLDER):
 	@mkdir -p $(SCREENSHOTS_FOLDER)
