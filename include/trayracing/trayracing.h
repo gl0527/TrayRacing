@@ -122,6 +122,7 @@ TRAYRACING_DECL float vec2_length_sqr(Vec2 a);
 TRAYRACING_DECL float vec2_length(Vec2 a);
 TRAYRACING_DECL Vec2 vec2_norm(Vec2 a);
 TRAYRACING_DECL float vec2_dist(Vec2 a, Vec2 b);
+TRAYRACING_DECL Vec2 vec2_lerp(Vec2 a, Vec2 b, float t);
 
 TRAYRACING_DECL Vec3 vec3_inv(Vec3 a);
 TRAYRACING_DECL Vec3 vec3_add(Vec3 a, Vec3 b);
@@ -136,6 +137,7 @@ TRAYRACING_DECL Vec3 vec3_norm(Vec3 a);
 TRAYRACING_DECL float vec3_dist(Vec3 a, Vec3 b);
 TRAYRACING_DECL Vec3 vec3_reflect(Vec3 n, Vec3 v);
 TRAYRACING_DECL Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx);
+TRAYRACING_DECL Vec3 vec3_lerp(Vec3 a, Vec3 b, float t);
 
 TRAYRACING_DECL Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fov);
 
@@ -297,6 +299,11 @@ float vec2_dist(Vec2 a, Vec2 b)
     return vec2_length(vec2_sub(b, a));
 }
 
+Vec2 vec2_lerp(Vec2 a, Vec2 b, float t)
+{
+    return vec2_add(vec2_scale(1.0f - t, a), vec2_scale(t, b));
+}
+
 static inline Vec3 vec3_zero(void)
 {
     return LITERAL(Vec3){.x = 0.0f, .y = 0.0f, .z = 0.0f};
@@ -429,6 +436,11 @@ Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx)
                 vec3_add(vec3_scale(vec3_invRefrIdxX, i), vec3_scale(cosa * vec3_invRefrIdxX - sqrtf(discX), n)),
                 vec3_add(vec3_scale(vec3_invRefrIdxY, i), vec3_scale(cosa * vec3_invRefrIdxY - sqrtf(discY), n))),
                 vec3_add(vec3_scale(vec3_invRefrIdxZ, i), vec3_scale(cosa * vec3_invRefrIdxZ - sqrtf(discZ), n)));
+}
+
+Vec3 vec3_lerp(Vec3 a, Vec3 b, float t)
+{
+    return vec3_add(vec3_scale(1.0f - t, a), vec3_scale(t, b));
 }
 
 Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fov)
