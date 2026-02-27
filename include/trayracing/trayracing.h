@@ -37,9 +37,9 @@ typedef union Vec3 {
     struct { float r, g, b; };
     struct { float s, t, u; };
 
-    struct { Vec2 xy; float _z; };
-    struct { Vec2 rg; float _b; };
-    struct { Vec2 st; float _u; };
+    struct { Vec2 xy; };
+    struct { Vec2 rg; };
+    struct { Vec2 st; };
     struct { float _x; Vec2 yz; };
     struct { float _r; Vec2 gb; };
     struct { float _s; Vec2 tu; };
