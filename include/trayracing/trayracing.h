@@ -148,6 +148,8 @@ TRAYRACING_DECL void resourcepool_add_material(ResourcePool *const pResourcePool
 
 TRAYRACING_DECL void frame_save_to_file(Frame const *const frame);
 
+TRAYRACING_DECL void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t thickness);
+
 TRAYRACING_DECL Scene scene_create(Camera cam, Vec3 La);
 TRAYRACING_DECL void scene_add_sphere(Scene *const scene, Sphere sphere);
 TRAYRACING_DECL void scene_add_light(Scene *const scene, Light light);
@@ -674,6 +676,31 @@ void frame_save_to_file(Frame const *const frame)
     fclose(file);
 
     printf("Screenshot is saved as \'%s\'.\n", output_path);
+}
+
+void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t thickness)
+{
+    Vec2 const direction = vec2_norm(vec2_sub(end, start));
+    Vec2 const perpendicular = LITERAL(Vec2){-direction.y, direction.x};
+
+    for (float t = 0.0f, delta = 0.5f / vec2_dist(start, end); t < 1.0f + delta; t += delta)
+    {
+        Vec2 const p = vec2_lerp(start, end, t);
+        frame->data[(int)p.y * FRAME_WIDTH + (int)p.x] = color;
+
+        for (uint8_t i = 2; i <= thickness; ++i)
+        {
+            Vec2 p2 = vec2_scale(i / 2, perpendicular);
+
+            if (i % 2 == 0) {
+                p2 = vec2_add(p, p2);
+            } else {
+                p2 = vec2_sub(p, p2);
+            }
+
+            frame->data[(int)p2.y * FRAME_WIDTH + (int)p2.x] = color;
+        }
+    }
 }
 
 Scene scene_create(Camera cam, Vec3 La)
