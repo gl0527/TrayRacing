@@ -25,6 +25,8 @@ Scene scene;
 
 uint8_t tick = 0;
 
+char frame_time_str[32] = "FRAME TIME ...";
+
 void onInitialization(void) {
     srand(time(NULL));
 	glViewport(0, 0, SCREENWIDTH, SCREENHEIGHT);
@@ -73,8 +75,12 @@ void onDisplay(void) {
 
     float const frameTime = scene_render(&scene, &frame);
     if (tick != 0) {
-        printf("Frame time = %.2fms\n", 1000 * frameTime);
+        snprintf(frame_time_str, sizeof(frame_time_str), "FRAME TIME ... %.2fMS", 1000 * frameTime);
     }
+
+    Vec3 lineColor = LITERAL(Vec3){1.0f, 1.0f, 0.0f};
+    Vec2 offset = LITERAL(Vec2){20.0f, 550.0f};
+    text_render(&frame, frame_time_str, offset, lineColor);
 
     glDrawPixels(FRAME_WIDTH, FRAME_HEIGHT, GL_RGB, GL_FLOAT, frame.data);
 	

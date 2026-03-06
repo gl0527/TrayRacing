@@ -87,7 +87,8 @@ typedef struct Sphere {
 typedef enum Values {
     MAX_MATERIAL_COUNT = 10,
     MAX_SPHERE_COUNT = 128,
-    MAX_LIGHT_COUNT = 4
+    MAX_LIGHT_COUNT = 4,
+    GLYPH_DATA_SIZE = 12
 } Values;
 
 typedef struct ResourcePool {
@@ -107,6 +108,49 @@ typedef struct Scene {
 typedef struct Frame {
     Vec3 data[FRAME_WIDTH * FRAME_HEIGHT];
 } Frame;
+
+static float glyphs[][GLYPH_DATA_SIZE] =
+{
+    { 0.0f,0.0f,0.5f,1.0f,1.0f,0.0f,0.75f,0.5f,0.25f,0.5f,0.25f,0.5f }, //A
+    { 0.0f,0.0f,0.0f,1.0f,1.0f,0.75f,0.0f,0.5f,1.0f,0.25f,0.0f,0.0f },
+    { 1.0f,1.0f,0.25f,1.0f,0.0f,0.75f,0.0f,0.25f,0.25f,0.0f,1.0f,0.0f },
+    { 0.0f,1.0f,1.0f,0.5f,1.0f,0.25f,0.75f,0.0f,0.0f,0.0f,0.0f,1.0f },
+    { 1.0f,1.0f,0.0f,0.5f,1.0f,0.5f,0.0f,0.5f,0.0f,0.0f,1.0f,0.0f },
+    { 1.0f,1.0f,0.0f,1.0f,0.0f,0.5f,1.0f,0.5f,0.0f,0.5f,0.0f,0.0f },
+    { 1.0f,1.0f,0.0f,1.0f,0.0f,0.0f,1.0f,0.0f,1.0f,0.5f,0.5f,0.5f },
+    { 1.0f,1.0f,1.0f,0.0f,1.0f,0.5f,0.0f,0.5f,0.0f,1.0f,0.0f,0.0f },
+    { 0.4f,1.0f,0.6f,1.0f,0.5f,1.0f,0.5f,0.0f,0.4f,0.0f,0.6f,0.0f },
+    { 0.5f,1.0f,1.0f,1.0f,1.0f,0.25f,0.75f,0.0f,0.25f,0.0f,0.0f,0.25f },
+    { 1.0f,1.0f,0.0f,0.5f,0.0f,1.0f,0.0f,0.0f,0.0f,0.5f,1.0f,0.0f },
+    { 0.0f,1.0f,0.0f,0.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f },
+    { 0.0f,0.0f,0.0f,1.0f,0.5f,0.0f,1.0f,1.0f,1.0f,0.0f,1.0f,0.0f },
+    { 0.0f,0.0f,0.0f,1.0f,1.0f,0.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f },
+    { 0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,1.0f,0.0f,0.0f,0.0f,0.0f,0.0f },
+    { 0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,1.0f,0.5f,0.0f,0.5f,0.0f,0.5f },
+    { 1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,1.0f,0.0f,0.75f,0.25f },
+    { 0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,1.0f,0.5f,0.0f,0.5f,1.0f,0.0f },
+    { 1.0f,1.0f,0.0f,0.8f,0.0f,0.7f,1.0f,0.3f,1.0f,0.2f,0.0f,0.0f },
+    { 0.0f,1.0f,1.0f,1.0f,0.5f,1.0f,0.5f,0.0f,0.5f,0.0f,0.5f,0.0f },
+    { 0.0f,1.0f,0.0f,0.25f,0.25f,0.0f,0.75f,0.0f,1.0f,0.25f,1.0f,1.0f },
+    { 0.0f,1.0f,0.5f,0.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f },
+    { 0.0f,1.0f,0.25f,0.0f,0.5f,0.5f,0.75f,0.0f,1.0f,1.0f,1.0f,1.0f },
+    { 0.0f,1.0f,1.0f,0.0f,0.5f,0.5f,1.0f,1.0f,0.0f,0.0f,0.0f,0.0f },
+    { 0.0f,1.0f,0.5f,0.5f,1.0f,1.0f,0.5f,0.5f,0.5f,0.0f,0.5f,0.0f },
+    { 0.0f,1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f }, //Z
+    { 0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,1.0f,0.0f,0.0f,0.0f,1.0f,1.0f }, // 0
+    { 0.0f,0.5f,1.0f,1.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f },
+    { 0.0f,0.75f,0.25f,1.0f,0.75f,1.0f,1.0f,0.75f,0.0f,0.0f,1.0f,0.0f },
+    { 0.0f,1.0f,1.0f,1.0f,0.5f,0.6f,0.5f,0.4f,1.0f,0.0f,0.0f,0.0f },
+    { 1.0f,1.0f,0.0f,0.25f,1.0f,0.25f,0.75f,0.25f,0.75f,0.5f,0.75f,0.0f },
+    { 1.0f,1.0f,0.0f,1.0f,0.0f,0.5f,1.0f,0.5f,1.0f,0.0f,0.0f,0.0f },
+    { 1.0f,1.0f,0.0f,0.5f,1.0f,0.5f,1.0f,0.0f,0.0f,0.0f,0.0f,0.5f },
+    { 0.0f,1.0f,1.0f,1.0f,0.0f,0.0f,0.5f,0.5f,0.25f,0.5f,0.75f,0.5f },
+    { 0.0f,1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,1.0f,0.0f },
+    { 1.0f,0.5f,0.0f,0.5f,0.0f,1.0f,1.0f,1.0f,1.0f,0.5f,0.0f,0.0f }, //9
+    { 0.0f,0.5f,1.0f,0.5f,1.0f,0.5f,1.0f,0.5f,1.0f,0.5f,1.0f,0.5f }, //-
+    { 0.45f,0.0f,0.55f,0.0f,0.55f,0.1f,0.45f,0.1f,0.45f,0.0f,0.45f,0.0f }, //.
+    { 0.5f,0.465f,0.475f,0.56f,0.55f,0.5f,0.45f,0.5f,0.525f,0.56f,0.5f,0.465f }, //*
+};
 
 #ifdef __cplusplus
 extern "C" {
@@ -149,6 +193,8 @@ TRAYRACING_DECL void resourcepool_add_material(ResourcePool *const pResourcePool
 TRAYRACING_DECL void frame_save_to_file(Frame const *const frame);
 
 TRAYRACING_DECL void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t thickness);
+
+TRAYRACING_DECL void text_render(Frame* const frame, char *const text, Vec2 position, Vec3 color);
 
 TRAYRACING_DECL Scene scene_create(Camera cam, Vec3 La);
 TRAYRACING_DECL void scene_add_sphere(Scene *const scene, Sphere sphere);
@@ -686,7 +732,7 @@ void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t t
     for (float t = 0.0f, delta = 0.5f / vec2_dist(start, end); t < 1.0f + delta; t += delta)
     {
         Vec2 const p = vec2_lerp(start, end, t);
-        frame->data[(int)p.y * FRAME_WIDTH + (int)p.x] = color;
+        frame->data[(int)(p.y + 0.5f) * FRAME_WIDTH + (int)(p.x + 0.5f)] = color;
 
         for (uint8_t i = 2; i <= thickness; ++i)
         {
@@ -698,8 +744,59 @@ void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t t
                 p2 = vec2_sub(p, p2);
             }
 
-            frame->data[(int)p2.y * FRAME_WIDTH + (int)p2.x] = color;
+            frame->data[(int)(p2.y + 0.5f) * FRAME_WIDTH + (int)(p2.x + 0.5f)] = color;
         }
+    }
+}
+
+char glyph_character_map(char c)
+{
+    if (c >= 'A' && c <= 'Z') {
+        return c - 'A';
+    }
+    if (c >= '0' && c <= '9') {
+        return c - '0' + ('Z' - 'A' + 1);
+    }
+    if (c == '-') {
+        return 36;
+    }
+    if (c == '.') {
+        return 37;
+    }
+    if (c == ' ') {
+        return -1;
+    }
+
+    return 38;
+}
+
+void text_render(Frame* const frame, char *const text, Vec2 position, Vec3 color)
+{
+    float const size = 8.0f;
+    float const step = 12.0f;
+    uint8_t const GLYPH_POINT_COUNT = GLYPH_DATA_SIZE / 2;
+
+    for (char* pc = text; *pc != '\0'; ++pc)
+    {
+        char const index = glyph_character_map(*pc);
+
+        if (index != -1) {
+            float* glyph_normal_coords = glyphs[index];
+            Vec2 glyph_pixel_coords[GLYPH_POINT_COUNT];
+
+            for (size_t i = 0; i < GLYPH_DATA_SIZE; i += 2)
+            {
+                glyph_pixel_coords[i/2] =
+                    vec2_add(vec2_scale(size, LITERAL(Vec2){glyph_normal_coords[i], glyph_normal_coords[i+1]}), position);
+            }
+
+            for (size_t i = 0, n = GLYPH_POINT_COUNT - 1; i < n; ++i)
+            {
+                line_render(frame, glyph_pixel_coords[i], glyph_pixel_coords[i+1], color, 1);
+            }
+        }
+
+        position = vec2_add(position, LITERAL(Vec2){step, 0.0f});
     }
 }
 
