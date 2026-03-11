@@ -729,7 +729,7 @@ void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t t
     Vec2 const direction = vec2_norm(vec2_sub(end, start));
     Vec2 const perpendicular = LITERAL(Vec2){-direction.y, direction.x};
 
-    for (float t = 0.0f, delta = 0.125f / vec2_dist(start, end); t < 1.0f + delta; t += delta)
+    for (float t = 0.0f, delta = 0.125f / vec2_dist(start, end), tend = 1.0f + delta; t < tend; t += delta)
     {
         Vec2 const p = vec2_lerp(start, end, t);
         frame->data[(int)(p.y + 0.5f) * FRAME_WIDTH + (int)(p.x + 0.5f)] = color;
