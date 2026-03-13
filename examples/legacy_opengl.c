@@ -25,7 +25,7 @@ Scene scene;
 
 uint8_t tick = 0;
 
-char frame_time_str[32] = "FRAME TIME ...";
+char frame_time_str[32] = "Frame time ...";
 
 void onInitialization(void) {
     srand(time(NULL));
@@ -75,7 +75,7 @@ void onDisplay(void) {
 
     float const frameTime = scene_render(&scene, &frame);
     if (tick != 0) {
-        snprintf(frame_time_str, sizeof(frame_time_str), "FRAME TIME ... %.2fMS", 1000 * frameTime);
+        snprintf(frame_time_str, sizeof(frame_time_str), "Frame time ... %.2fMS", 1000 * frameTime);
     }
 
     Vec3 lineColor = LITERAL(Vec3){1.0f, 1.0f, 0.0f};

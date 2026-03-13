@@ -751,9 +751,6 @@ void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t t
 
 char glyph_character_map(char c)
 {
-    if (c >= 'A' && c <= 'Z') {
-        return c - 'A';
-    }
     if (c >= '0' && c <= '9') {
         return c - '0' + ('Z' - 'A' + 1);
     }
@@ -765,6 +762,13 @@ char glyph_character_map(char c)
     }
     if (c == ' ') {
         return -1;
+    }
+
+    // Convert character to lower case.
+    c |= 0x20;
+
+    if (c >= 'a' && c <= 'z') {
+        return c - 'a';
     }
 
     return 38;
