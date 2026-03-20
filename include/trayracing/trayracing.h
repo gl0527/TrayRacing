@@ -109,47 +109,47 @@ typedef struct Frame {
     Vec3 data[FRAME_WIDTH * FRAME_HEIGHT];
 } Frame;
 
-static float glyphs[][GLYPH_DATA_SIZE] =
+static float font[][GLYPH_DATA_SIZE] =
 {
-    { 0.0f,0.0f,0.5f,1.0f,1.0f,0.0f,0.75f,0.5f,0.25f,0.5f,0.25f,0.5f }, //A
-    { 0.0f,0.0f,0.0f,1.0f,1.0f,0.75f,0.0f,0.5f,1.0f,0.25f,0.0f,0.0f },
-    { 1.0f,1.0f,0.25f,1.0f,0.0f,0.75f,0.0f,0.25f,0.25f,0.0f,1.0f,0.0f },
-    { 0.0f,1.0f,1.0f,0.5f,1.0f,0.25f,0.75f,0.0f,0.0f,0.0f,0.0f,1.0f },
-    { 1.0f,1.0f,0.0f,0.5f,1.0f,0.5f,0.0f,0.5f,0.0f,0.0f,1.0f,0.0f },
-    { 1.0f,1.0f,0.0f,1.0f,0.0f,0.5f,1.0f,0.5f,0.0f,0.5f,0.0f,0.0f },
-    { 1.0f,1.0f,0.0f,1.0f,0.0f,0.0f,1.0f,0.0f,1.0f,0.5f,0.5f,0.5f },
-    { 1.0f,1.0f,1.0f,0.0f,1.0f,0.5f,0.0f,0.5f,0.0f,1.0f,0.0f,0.0f },
-    { 0.4f,1.0f,0.6f,1.0f,0.5f,1.0f,0.5f,0.0f,0.4f,0.0f,0.6f,0.0f },
-    { 0.5f,1.0f,1.0f,1.0f,1.0f,0.25f,0.75f,0.0f,0.25f,0.0f,0.0f,0.25f },
-    { 1.0f,1.0f,0.0f,0.5f,0.0f,1.0f,0.0f,0.0f,0.0f,0.5f,1.0f,0.0f },
-    { 0.0f,1.0f,0.0f,0.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f },
-    { 0.0f,0.0f,0.0f,1.0f,0.5f,0.0f,1.0f,1.0f,1.0f,0.0f,1.0f,0.0f },
-    { 0.0f,0.0f,0.0f,1.0f,1.0f,0.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f },
-    { 0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,1.0f,0.0f,0.0f,0.0f,0.0f,0.0f },
-    { 0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,1.0f,0.5f,0.0f,0.5f,0.0f,0.5f },
-    { 1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,1.0f,0.0f,0.75f,0.25f },
-    { 0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,1.0f,0.5f,0.0f,0.5f,1.0f,0.0f },
-    { 1.0f,1.0f,0.0f,0.8f,0.0f,0.7f,1.0f,0.3f,1.0f,0.2f,0.0f,0.0f },
-    { 0.0f,1.0f,1.0f,1.0f,0.5f,1.0f,0.5f,0.0f,0.5f,0.0f,0.5f,0.0f },
-    { 0.0f,1.0f,0.0f,0.25f,0.25f,0.0f,0.75f,0.0f,1.0f,0.25f,1.0f,1.0f },
-    { 0.0f,1.0f,0.5f,0.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f },
-    { 0.0f,1.0f,0.25f,0.0f,0.5f,0.5f,0.75f,0.0f,1.0f,1.0f,1.0f,1.0f },
-    { 0.0f,1.0f,1.0f,0.0f,0.5f,0.5f,1.0f,1.0f,0.0f,0.0f,0.0f,0.0f },
-    { 0.0f,1.0f,0.5f,0.5f,1.0f,1.0f,0.5f,0.5f,0.5f,0.0f,0.5f,0.0f },
-    { 0.0f,1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f }, //Z
-    { 0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,1.0f,0.0f,0.0f,0.0f,1.0f,1.0f }, // 0
-    { 0.0f,0.5f,1.0f,1.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f },
-    { 0.0f,0.75f,0.25f,1.0f,0.75f,1.0f,1.0f,0.75f,0.0f,0.0f,1.0f,0.0f },
-    { 0.0f,1.0f,1.0f,1.0f,0.5f,0.6f,0.5f,0.4f,1.0f,0.0f,0.0f,0.0f },
-    { 1.0f,1.0f,0.0f,0.25f,1.0f,0.25f,0.75f,0.25f,0.75f,0.5f,0.75f,0.0f },
-    { 1.0f,1.0f,0.0f,1.0f,0.0f,0.5f,1.0f,0.5f,1.0f,0.0f,0.0f,0.0f },
-    { 1.0f,1.0f,0.0f,0.5f,1.0f,0.5f,1.0f,0.0f,0.0f,0.0f,0.0f,0.5f },
-    { 0.0f,1.0f,1.0f,1.0f,0.0f,0.0f,0.5f,0.5f,0.25f,0.5f,0.75f,0.5f },
-    { 0.0f,1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,1.0f,0.0f },
-    { 1.0f,0.5f,0.0f,0.5f,0.0f,1.0f,1.0f,1.0f,1.0f,0.5f,0.0f,0.0f }, //9
-    { 0.0f,0.5f,1.0f,0.5f,1.0f,0.5f,1.0f,0.5f,1.0f,0.5f,1.0f,0.5f }, //-
-    { 0.45f,0.0f,0.55f,0.0f,0.55f,0.1f,0.45f,0.1f,0.45f,0.0f,0.45f,0.0f }, //.
-    { 0.5f,0.465f,0.475f,0.56f,0.55f,0.5f,0.45f,0.5f,0.525f,0.56f,0.5f,0.465f }, //*
+    { 0.0f,0.0f, 0.5f,1.0f, 1.0f,0.0f, 0.75f,0.5f, 0.25f,0.5f, 0.25f,0.5f }, //A
+    { 0.0f,0.0f, 0.0f,1.0f, 1.0f,0.75f, 0.0f,0.5f, 1.0f,0.25f, 0.0f,0.0f },
+    { 1.0f,1.0f, 0.25f,1.0f, 0.0f,0.75f, 0.0f,0.25f, 0.25f,0.0f, 1.0f,0.0f },
+    { 0.0f,1.0f, 1.0f,0.5f, 1.0f,0.25f, 0.75f,0.0f, 0.0f,0.0f, 0.0f,1.0f },
+    { 1.0f,1.0f, 0.0f,0.5f, 1.0f,0.5f, 0.0f,0.5f, 0.0f,0.0f, 1.0f,0.0f },
+    { 1.0f,1.0f, 0.0f,1.0f, 0.0f,0.5f, 1.0f,0.5f, 0.0f,0.5f, 0.0f,0.0f },
+    { 1.0f,1.0f, 0.0f,1.0f, 0.0f,0.0f, 1.0f,0.0f, 1.0f,0.5f, 0.5f,0.5f },
+    { 1.0f,1.0f, 1.0f,0.0f, 1.0f,0.5f, 0.0f,0.5f, 0.0f,1.0f, 0.0f,0.0f },
+    { 0.4f,1.0f, 0.6f,1.0f, 0.5f,1.0f, 0.5f,0.0f, 0.4f,0.0f, 0.6f,0.0f },
+    { 0.5f,1.0f, 1.0f,1.0f, 1.0f,0.25f, 0.75f,0.0f, 0.25f,0.0f, 0.0f,0.25f },
+    { 1.0f,1.0f, 0.0f,0.5f, 0.0f,1.0f, 0.0f,0.0f, 0.0f,0.5f, 1.0f,0.0f },
+    { 0.0f,1.0f, 0.0f,0.0f, 1.0f,0.0f, 1.0f,0.0f, 1.0f,0.0f, 1.0f,0.0f },
+    { 0.0f,0.0f, 0.0f,1.0f, 0.5f,0.0f, 1.0f,1.0f, 1.0f,0.0f, 1.0f,0.0f },
+    { 0.0f,0.0f, 0.0f,1.0f, 1.0f,0.0f, 1.0f,1.0f, 1.0f,1.0f, 1.0f,1.0f },
+    { 0.0f,0.0f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.0f, 0.0f,0.0f, 0.0f,0.0f },
+    { 0.0f,0.0f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.5f, 0.0f,0.5f, 0.0f,0.5f },
+    { 1.0f,0.0f, 0.0f,0.0f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.0f, 0.75f,0.25f },
+    { 0.0f,0.0f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.5f, 0.0f,0.5f, 1.0f,0.0f },
+    { 1.0f,1.0f, 0.0f,0.8f, 0.0f,0.7f, 1.0f,0.3f, 1.0f,0.2f, 0.0f,0.0f },
+    { 0.0f,1.0f, 1.0f,1.0f, 0.5f,1.0f, 0.5f,0.0f, 0.5f,0.0f, 0.5f,0.0f },
+    { 0.0f,1.0f, 0.0f,0.25f, 0.25f,0.0f, 0.75f,0.0f, 1.0f,0.25f, 1.0f,1.0f },
+    { 0.0f,1.0f, 0.5f,0.0f, 1.0f,1.0f, 1.0f,1.0f, 1.0f,1.0f, 1.0f,1.0f },
+    { 0.0f,1.0f, 0.25f,0.0f, 0.5f,0.5f, 0.75f,0.0f, 1.0f,1.0f, 1.0f,1.0f },
+    { 0.0f,1.0f, 1.0f,0.0f, 0.5f,0.5f, 1.0f,1.0f, 0.0f,0.0f, 0.0f,0.0f },
+    { 0.0f,1.0f, 0.5f,0.5f, 1.0f,1.0f, 0.5f,0.5f, 0.5f,0.0f, 0.5f,0.0f },
+    { 0.0f,1.0f, 1.0f,1.0f, 0.0f,0.0f, 1.0f,0.0f, 1.0f,0.0f, 1.0f,0.0f }, //Z
+    { 0.0f,0.0f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.0f, 0.0f,0.0f, 1.0f,1.0f }, // 0
+    { 0.0f,0.5f, 1.0f,1.0f, 1.0f,0.0f, 1.0f,0.0f, 1.0f,0.0f, 1.0f,0.0f },
+    { 0.0f,0.75f, 0.25f,1.0f, 0.75f,1.0f, 1.0f,0.75f, 0.0f,0.0f, 1.0f,0.0f },
+    { 0.0f,1.0f, 1.0f,1.0f, 0.5f,0.6f, 0.5f,0.4f, 1.0f,0.0f, 0.0f,0.0f },
+    { 1.0f,1.0f, 0.0f,0.25f, 1.0f,0.25f, 0.75f,0.25f, 0.75f,0.5f, 0.75f,0.0f },
+    { 1.0f,1.0f, 0.0f,1.0f, 0.0f,0.5f, 1.0f,0.5f, 1.0f,0.0f, 0.0f,0.0f },
+    { 1.0f,1.0f, 0.0f,0.5f, 1.0f,0.5f, 1.0f,0.0f, 0.0f,0.0f, 0.0f,0.5f },
+    { 0.0f,1.0f, 1.0f,1.0f, 0.0f,0.0f, 0.5f,0.5f, 0.25f,0.5f, 0.75f,0.5f },
+    { 0.0f,1.0f, 1.0f,1.0f, 0.0f,0.0f, 1.0f,0.0f, 0.0f,1.0f, 1.0f,0.0f },
+    { 1.0f,0.5f, 0.0f,0.5f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.5f, 0.0f,0.0f }, //9
+    { 0.0f,0.5f, 1.0f,0.5f, 1.0f,0.5f, 1.0f,0.5f, 1.0f,0.5f, 1.0f,0.5f }, //-
+    { 0.45f,0.0f, 0.55f,0.0f, 0.55f,0.1f, 0.45f,0.1f, 0.45f,0.0f, 0.45f,0.0f }, //.
+    { 0.5f,0.465f, 0.475f,0.56f, 0.55f,0.5f, 0.45f,0.5f, 0.525f,0.56f, 0.5f,0.465f }, //*
 };
 
 #ifdef __cplusplus
@@ -194,7 +194,7 @@ TRAYRACING_DECL void frame_save_to_file(Frame const *const frame);
 
 TRAYRACING_DECL void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t thickness);
 
-TRAYRACING_DECL void text_render(Frame* const frame, char *const text, Vec2 position, Vec3 color);
+TRAYRACING_DECL void text_render(Frame *const frame, char const *text, Vec2 position, uint8_t size, Vec3 color);
 
 TRAYRACING_DECL Scene scene_create(Camera cam, Vec3 La);
 TRAYRACING_DECL void scene_add_sphere(Scene *const scene, Sphere sphere);
@@ -727,7 +727,7 @@ void frame_save_to_file(Frame const *const frame)
 void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t thickness)
 {
     Vec2 const direction = vec2_norm(vec2_sub(end, start));
-    Vec2 const perpendicular = LITERAL(Vec2){-direction.y, direction.x};
+    Vec2 const perpendicular = LITERAL(Vec2){.x = -direction.y, .y = direction.x};
 
     for (float t = 0.0f, delta = 0.125f / vec2_dist(start, end), tend = 1.0f + delta; t < tend; t += delta)
     {
@@ -749,7 +749,7 @@ void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t t
     }
 }
 
-char glyph_character_map(char c)
+static inline char glyph_character_map(char c)
 {
     if (c >= '0' && c <= '9') {
         return c - '0' + ('Z' - 'A' + 1);
@@ -774,24 +774,24 @@ char glyph_character_map(char c)
     return 38;
 }
 
-void text_render(Frame* const frame, char *const text, Vec2 position, Vec3 color)
+void text_render(Frame *const frame, char const *text, Vec2 position, uint8_t size, Vec3 color)
 {
-    float const size = 8.0f;
-    float const step = 12.0f;
     uint8_t const GLYPH_POINT_COUNT = GLYPH_DATA_SIZE / 2;
+    float const step = 1.5f * size;
 
-    for (char* pc = text; *pc != '\0'; ++pc)
+    char c;
+    while ((c = *(text++)))
     {
-        char const index = glyph_character_map(*pc);
+        char const index = glyph_character_map(c);
 
         if (index != -1) {
-            float* glyph_normal_coords = glyphs[index];
+            float* glyph_normal_coords = font[index];
             Vec2 glyph_pixel_coords[GLYPH_POINT_COUNT];
 
             for (size_t i = 0; i < GLYPH_DATA_SIZE; i += 2)
             {
                 glyph_pixel_coords[i/2] =
-                    vec2_add(vec2_scale(size, LITERAL(Vec2){glyph_normal_coords[i], glyph_normal_coords[i+1]}), position);
+                    vec2_add(vec2_scale(size, LITERAL(Vec2){.x = glyph_normal_coords[i], .y = glyph_normal_coords[i+1]}), position);
             }
 
             for (size_t i = 0, n = GLYPH_POINT_COUNT - 1; i < n; ++i)
@@ -800,7 +800,7 @@ void text_render(Frame* const frame, char *const text, Vec2 position, Vec3 color
             }
         }
 
-        position = vec2_add(position, LITERAL(Vec2){step, 0.0f});
+        position = vec2_add(position, LITERAL(Vec2){.x = step, .y = 0.0f});
     }
 }
 
