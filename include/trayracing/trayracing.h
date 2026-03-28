@@ -540,34 +540,30 @@ Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specular, float shinin
     return material;
 }
 
-static Vec3 material_shade(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
+static Vec3 material_shade_phong_blinn(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
 {
-    if (material->flags & MT_ROUGH)
+    Vec3 outRadiance = vec3_zero();
+    float const NdotL = vec3_dot(normal, toLight);
+    if (NdotL < 0)
     {
-        Vec3 outRadiance = vec3_zero();
-        float const NdotL = vec3_dot(normal, toLight);
-        if (NdotL < 0)
-        {
-            return outRadiance;
-        }
-        outRadiance = vec3_scale(NdotL, vec3_mul(inRadiance, material->diffuse));
-        Vec3 const halfway = vec3_norm(vec3_add(toEye, toLight));
-        float const NdotH = vec3_dot(normal, halfway);
-        if (NdotH < 0)
-        {
-            return outRadiance;
-        }
-
-        return vec3_add(outRadiance, vec3_scale(powf(NdotH, material->shininess), vec3_mul(inRadiance, material->specular)));
+        return outRadiance;
     }
-    if (material->flags & (MT_REFLECTIVE | MT_REFRACTIVE))
+    outRadiance = vec3_scale(NdotL, vec3_mul(inRadiance, material->diffuse));
+    Vec3 const halfway = vec3_norm(vec3_add(toEye, toLight));
+    float const NdotH = vec3_dot(normal, halfway);
+    if (NdotH < 0)
     {
-        float const cosa = fabsf(vec3_dot(normal, toEye));
-
-        return vec3_add(material->minReflectance, vec3_scale(powf(1.0f - cosa, 5), vec3_sub(vec3_one(), material->minReflectance)));
+        return outRadiance;
     }
 
-    return vec3_zero();
+    return vec3_add(outRadiance, vec3_scale(powf(NdotH, material->shininess), vec3_mul(inRadiance, material->specular)));
+}
+
+static Vec3 material_shade_fresnel(Material const *const material, Vec3 normal, Vec3 toEye)
+{
+    float const cosa = fabsf(vec3_dot(normal, toEye));
+
+    return vec3_add(material->minReflectance, vec3_scale(powf(1.0f - cosa, 5), vec3_sub(vec3_one(), material->minReflectance)));
 }
 
 static Material material_emerald(void)
@@ -885,13 +881,13 @@ static Vec3 scene_raytrace(Scene const *const scene, Ray const *const ray, uint8
             Hit const shadowHit = scene_raycast(scene, &shadowRay);
             if (shadowHit.t < 0)
             {
-                outRadiance = vec3_add(outRadiance, material_shade(hit.material, hit.normal, viewDir, toLight, scene->lights[i].exitance));
+                outRadiance = vec3_add(outRadiance, material_shade_phong_blinn(hit.material, hit.normal, viewDir, toLight, scene->lights[i].exitance));
             }
         }
     }
     if (hit.material->flags & (MT_REFLECTIVE | MT_REFRACTIVE))
     {
-        Vec3 const reflectance = material_shade(hit.material, hit.normal, viewDir, vec3_zero(), vec3_zero());
+        Vec3 const reflectance = material_shade_fresnel(hit.material, hit.normal, viewDir);
 
         if (hit.material->flags & MT_REFLECTIVE)
         {
