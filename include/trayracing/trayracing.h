@@ -99,6 +99,7 @@ typedef struct ResourcePool {
 typedef struct Scene {
     uint8_t currentSphereCount;
     uint8_t currentLightCount;
+    uint8_t samplesPerPixel;
     Sphere spheres[MAX_SPHERE_COUNT];
     Light lights[MAX_LIGHT_COUNT];
     Camera camera;
@@ -196,7 +197,7 @@ TRAYRACING_DECL void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 
 
 TRAYRACING_DECL void text_render(Frame *const frame, char const *text, Vec2 position, uint8_t size, Vec3 color);
 
-TRAYRACING_DECL Scene scene_create(Camera cam, Vec3 La);
+TRAYRACING_DECL Scene scene_create(Camera cam, Vec3 La, uint8_t samplesPerPixel);
 TRAYRACING_DECL void scene_add_sphere(Scene *const scene, Sphere sphere);
 TRAYRACING_DECL void scene_add_light(Scene *const scene, Light light);
 TRAYRACING_DECL float scene_render(Scene const *const scene, Frame *const frame);
@@ -507,7 +508,7 @@ Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fov)
 
 static Ray camera_get_ray(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight)
 {
-    Vec3 const dir = vec3_sub(vec3_add(vec3_add(camera->lookat, vec3_scale((2.0f * (x + 0.5f) / screenWidth - 1), camera->right)), vec3_scale((2.0f * (y + 0.5f) / screenHeight - 1), camera->up)), camera->eye);
+    Vec3 const dir = vec3_sub(vec3_add(vec3_add(camera->lookat, vec3_scale((2.0f * (x + rand_float(0.0f, 1.0f)) / screenWidth - 1), camera->right)), vec3_scale((2.0f * (y + rand_float(0.0f, 1.0f)) / screenHeight - 1), camera->up)), camera->eye);
     return LITERAL(Ray){camera->eye, vec3_norm(dir)};
 }
 
@@ -800,12 +801,13 @@ void text_render(Frame *const frame, char const *text, Vec2 position, uint8_t si
     }
 }
 
-Scene scene_create(Camera cam, Vec3 La)
+Scene scene_create(Camera cam, Vec3 La, uint8_t samplesPerPixel)
 {
     Scene scene;
 
     scene.currentSphereCount = 0;
     scene.currentLightCount = 0;
+    scene.samplesPerPixel = samplesPerPixel;
     scene.camera = cam;
     scene.ambientLight = La;
 
@@ -910,12 +912,20 @@ float scene_render(Scene const *const scene, Frame *const frame)
 {
     clock_t const start = clock();
 
+    uint8_t const samplesPerPixel = scene->samplesPerPixel;
+    float const normalizingFactor = 1.0f / samplesPerPixel;
+
     for (uint32_t y = 0; y < FRAME_HEIGHT; ++y)
     {
         for (uint32_t x = 0; x < FRAME_WIDTH; ++x)
         {
-            Ray const ray = camera_get_ray(&(scene->camera), x, y, FRAME_WIDTH, FRAME_HEIGHT);
-            frame->data[y * FRAME_WIDTH + x] = scene_raytrace(scene, &ray, 0);
+            Vec3 pixelColor = vec3_zero();
+            for (uint8_t sample = 0; sample < samplesPerPixel; ++sample)
+            {
+                Ray const ray = camera_get_ray(&(scene->camera), x, y, FRAME_WIDTH, FRAME_HEIGHT);
+                pixelColor = vec3_add(pixelColor, scene_raytrace(scene, &ray, 0));
+            }
+            frame->data[y * FRAME_WIDTH + x] = vec3_scale(normalizingFactor, pixelColor);
         }
     }
 
