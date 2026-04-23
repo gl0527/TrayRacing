@@ -78,8 +78,8 @@ void onDisplay(void) {
         snprintf(frame_time_str, sizeof(frame_time_str), "Frame time %.2fMS", 1000 * frameTime);
     }
 
-    Vec3 lineColor = LITERAL(Vec3){.r = 1.0f, .g = 1.0f, .b = 0.0f};
-    Vec2 offset = LITERAL(Vec2){.x = 20.0f, .y = 550.0f};
+    Vec3 lineColor = {.r = 1.0f, .g = 1.0f, .b = 0.0f};
+    Vec2 offset = {.x = 20.0f, .y = 550.0f};
     text_render(&frame, frame_time_str, offset, 8, lineColor);
 
     glDrawPixels(FRAME_WIDTH, FRAME_HEIGHT, GL_RGB, GL_FLOAT, frame.data);

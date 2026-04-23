@@ -724,7 +724,7 @@ void frame_save_to_file(Frame const *const frame)
 void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t thickness)
 {
     Vec2 const direction = vec2_norm(vec2_sub(end, start));
-    Vec2 const perpendicular = LITERAL(Vec2){.x = -direction.y, .y = direction.x};
+    Vec2 const perpendicular = {.x = -direction.y, .y = direction.x};
 
     for (float t = 0.0f, delta = 0.125f / vec2_dist(start, end), tend = 1.0f + delta; t < tend; t += delta)
     {
@@ -919,10 +919,10 @@ float scene_render(Scene const *const scene, Frame *const frame)
         {
             Vec2 pixelSamples[SAMPLES_PER_PIXEL] =
             {
-                LITERAL(Vec2){.x = rand_float(0.0f, 0.5f), .y = rand_float(0.5f, 1.0f)},
-                LITERAL(Vec2){.x = rand_float(0.5f, 1.0f), .y = rand_float(0.5f, 1.0f)},
-                LITERAL(Vec2){.x = rand_float(0.0f, 0.5f), .y = rand_float(0.0f, 0.5f)},
-                LITERAL(Vec2){.x = rand_float(0.5f, 1.0f), .y = rand_float(0.0f, 0.5f)}
+                {.x = rand_float(0.0f, 0.5f), .y = rand_float(0.5f, 1.0f)},
+                {.x = rand_float(0.5f, 1.0f), .y = rand_float(0.5f, 1.0f)},
+                {.x = rand_float(0.0f, 0.5f), .y = rand_float(0.0f, 0.5f)},
+                {.x = rand_float(0.5f, 1.0f), .y = rand_float(0.0f, 0.5f)}
             };
             Vec3 pixelColor = vec3_zero();
             for (uint8_t sample = 0; sample < SAMPLES_PER_PIXEL; ++sample)
