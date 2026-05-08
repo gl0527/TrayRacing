@@ -73,9 +73,9 @@ void onDisplay(void) {
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);		// torlesi szin beallitasa
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // kepernyo torles
 
-    float const frameTime = scene_render(&scene, &frame);
+    scene_render(&scene, &frame);
     if (tick != 0) {
-        snprintf(frame_time_str, sizeof(frame_time_str), "Frame time %.2fMS", 1000 * frameTime);
+        snprintf(frame_time_str, sizeof(frame_time_str), "Frame time %.2fMS", 1000 * frame.frameTimeInSec);
     }
 
     Vec3 lineColor = {.r = 1.0f, .g = 1.0f, .b = 0.0f};

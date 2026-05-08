@@ -107,6 +107,7 @@ typedef struct Scene {
 } Scene;
 
 typedef struct Frame {
+    float frameTimeInSec;
     Vec3 data[FRAME_WIDTH * FRAME_HEIGHT];
 } Frame;
 
@@ -192,6 +193,7 @@ TRAYRACING_DECL ResourcePool resourcepool_create(void);
 TRAYRACING_DECL void resourcepool_add_material(ResourcePool *const pResourcePool, Material material);
 
 TRAYRACING_DECL void frame_save_to_file(Frame const *const frame);
+TRAYRACING_DECL void frame_render_frametime(Frame *const frame);
 
 TRAYRACING_DECL void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t thickness);
 
@@ -200,7 +202,7 @@ TRAYRACING_DECL void text_render(Frame *const frame, char const *text, Vec2 posi
 TRAYRACING_DECL Scene scene_create(Camera cam, Vec3 La);
 TRAYRACING_DECL void scene_add_sphere(Scene *const scene, Sphere sphere);
 TRAYRACING_DECL void scene_add_light(Scene *const scene, Light light);
-TRAYRACING_DECL float scene_render(Scene const *const scene, Frame *const frame);
+TRAYRACING_DECL void scene_render(Scene const *const scene, Frame *const frame);
 
 #ifdef __cplusplus
 }
@@ -721,6 +723,16 @@ void frame_save_to_file(Frame const *const frame)
     printf("Screenshot is saved as \'%s\'.\n", output_path);
 }
 
+void frame_render_frametime(Frame *const frame)
+{
+    char text[16];
+    Vec3 const lineColor = {.r = 0.5f, .g = 0.5f, .b = 0.5f};
+    Vec2 const offset = {.x = 5.0f, .y = 5.0f};
+
+    snprintf(text, sizeof(text), "%.2fms", 1000 * frame->frameTimeInSec);
+    text_render(frame, text, offset, 8, lineColor);
+}
+
 void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t thickness)
 {
     Vec2 const direction = vec2_norm(vec2_sub(end, start));
@@ -907,7 +919,7 @@ static Vec3 scene_raytrace(Scene const *const scene, Ray const *const ray, uint8
     return outRadiance;
 }
 
-float scene_render(Scene const *const scene, Frame *const frame)
+void scene_render(Scene const *const scene, Frame *const frame)
 {
     clock_t const start = clock();
 
@@ -935,8 +947,7 @@ float scene_render(Scene const *const scene, Frame *const frame)
         }
     }
 
-    // Returns the frame time in seconds.
-    return (float)(clock() - start) / CLOCKS_PER_SEC;
+    frame->frameTimeInSec = (float)(clock() - start) / CLOCKS_PER_SEC;
 }
 
 #endif // TRAYRACING_IMPLEMENTATION

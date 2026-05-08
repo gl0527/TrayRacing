@@ -56,15 +56,8 @@ static void Update(float dt)
 
 static void Draw(void)
 {
-    float const frameTime = scene_render(&scene, &frame);
-
-    char text[32];
-    Vec3 const lineColor = {.r = 0.5f, .g = 0.5f, .b = 0.5f};
-    Vec2 const offset = {.x = 5.0f, .y = 5.0f};
-
-    snprintf(text, sizeof(text), "%.2fms", 1000 * frameTime);
-    text_render(&frame, text, offset, 8, lineColor);
-
+    scene_render(&scene, &frame);
+    frame_render_frametime(&frame);
     frame_save_to_file(&frame);
 }
 
