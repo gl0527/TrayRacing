@@ -931,10 +931,10 @@ void scene_render(Scene const *const scene, Frame *const frame)
         {
             Vec2 pixelSamples[SAMPLES_PER_PIXEL] =
             {
-                {.x = rand_float(0.0f, 0.5f), .y = rand_float(0.5f, 1.0f)},
-                {.x = rand_float(0.5f, 1.0f), .y = rand_float(0.5f, 1.0f)},
-                {.x = rand_float(0.0f, 0.5f), .y = rand_float(0.0f, 0.5f)},
-                {.x = rand_float(0.5f, 1.0f), .y = rand_float(0.0f, 0.5f)}
+                {.x = 0.375f, .y = 0.125f },
+                {.x = 0.875f, .y = 0.375f },
+                {.x = 0.125f, .y = 0.675f },
+                {.x = 0.675f, .y = 0.875f }
             };
             Vec3 pixelColor = vec3_zero();
             for (uint8_t sample = 0; sample < SAMPLES_PER_PIXEL; ++sample)
