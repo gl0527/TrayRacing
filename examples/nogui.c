@@ -31,10 +31,10 @@ static void Init(void)
     Light light = {vec3_norm(lightDir), {.r = 0.8f, .g = 0.8f, .b = 0.8f}};
     scene_add_light(&scene, light);
 
-    for (int i = 0; i < 20; ++i)
+    for (int i = 0; i < 49; ++i)
     {
         Vec3 center = {.x = rand_float(-1.0f, 1.0f), .y = rand_float(-1.0f, 1.0f), .z = rand_float(-1.0f, 1.0f)};
-        float radius = rand_float(0.2f, 0.4f);
+        float radius = rand_float(0.2f, 0.3f);
         int const materialIndex = rand_int(0, resourcePool.currentMaterialCount - 1);
         Sphere sphere = {center, radius, &(resourcePool.materials[materialIndex])};
         scene_add_sphere(&scene, sphere);
