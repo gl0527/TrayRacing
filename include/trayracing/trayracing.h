@@ -868,6 +868,21 @@ static Hit scene_raycast(Scene const *const scene, Ray const *const ray)
     return sphere_intersect(&spheres[bestIdx], ray, bestT);
 }
 
+static bool scene_shadowcast(Scene const *const scene, Ray const *const ray)
+{
+    Sphere const *const spheres = scene->spheres;
+
+    for (uint8_t i = 0, sphereCount = scene->currentSphereCount; i < sphereCount; ++i)
+    {
+        if (sphere_intersect_t(&spheres[i], ray) > 0.0f)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static Vec3 scene_raytrace(Scene const *const scene, Ray const *const ray, uint8_t depth)
 {
     if (depth > 5)
@@ -887,12 +902,11 @@ static Vec3 scene_raytrace(Scene const *const scene, Ray const *const ray, uint8
     if (hit.material->flags & MT_ROUGH)
     {
         outRadiance = vec3_add(outRadiance, vec3_mul(hit.material->ambient, scene->ambientLight));
-        for (uint8_t i = 0; i < scene->currentLightCount; ++i)
+        for (uint8_t i = 0, lightCount = scene->currentLightCount; i < lightCount; ++i)
         {
             Vec3 const toLight = vec3_norm(vec3_inv(scene->lights[i].direction));
             Ray const shadowRay = {vec3_add(hit.position, vec3_scale(PRECISION, hit.normal)), toLight};
-            Hit const shadowHit = scene_raycast(scene, &shadowRay);
-            if (shadowHit.t < 0)
+            if (!scene_shadowcast(scene, &shadowRay))
             {
                 outRadiance = vec3_add(outRadiance, material_shade_phong_blinn(hit.material, hit.normal, viewDir, toLight, scene->lights[i].exitance));
             }
