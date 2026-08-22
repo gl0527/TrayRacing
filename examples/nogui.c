@@ -54,11 +54,12 @@ static void Update(float dt)
 {
 }
 
-static void Draw(void)
+static bool Draw(void)
 {
     scene_render(&scene, &frame);
     frame_render_frametime(&frame);
-    frame_save_to_file(&frame);
+
+    return frame_save_to_file(&frame);
 }
 
 int main(int argc, char **argv)
@@ -68,7 +69,10 @@ int main(int argc, char **argv)
     while(1)
     {
         Update(0.0f);
-        Draw();
+        if (!Draw())
+        {
+            break;
+        }
     }
 
     Destroy();

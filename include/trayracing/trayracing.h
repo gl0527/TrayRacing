@@ -192,7 +192,7 @@ TRAYRACING_DECL Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specul
 TRAYRACING_DECL ResourcePool resourcepool_create(void);
 TRAYRACING_DECL void resourcepool_add_material(ResourcePool *const pResourcePool, Material material);
 
-TRAYRACING_DECL void frame_save_to_file(Frame const *const frame);
+TRAYRACING_DECL bool frame_save_to_file(Frame const *const frame);
 TRAYRACING_DECL void frame_render_frametime(Frame *const frame);
 
 TRAYRACING_DECL void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 color, uint8_t thickness);
@@ -670,7 +670,7 @@ void resourcepool_add_material(ResourcePool *const pResourcePool, Material mater
     }
 }
 
-void frame_save_to_file(Frame const *const frame)
+bool frame_save_to_file(Frame const *const frame)
 {
     // Assemble output file name.
     static uint32_t counter = 0;
@@ -678,7 +678,7 @@ void frame_save_to_file(Frame const *const frame)
     if (counter > 999)
     {
         printf("No more screenshots will be written in this session!\n");
-        return;
+        return false;
     }
 
     char output_path[256];
@@ -696,6 +696,12 @@ void frame_save_to_file(Frame const *const frame)
 
     // Open file.
     FILE* file = fopen(output_path, "wb");
+
+    if (NULL == file)
+    {
+        perror(output_path);
+        return false;
+    }
 
     // Write meta data into file.
     fprintf(file, "P6\n%d %d\n255\n", FRAME_WIDTH, FRAME_HEIGHT);
@@ -721,6 +727,8 @@ void frame_save_to_file(Frame const *const frame)
     fclose(file);
 
     printf("Screenshot is saved as \'%s\'.\n", output_path);
+
+    return true;
 }
 
 void frame_render_frametime(Frame *const frame)
