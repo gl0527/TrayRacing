@@ -66,16 +66,19 @@ int main(int argc, char **argv)
 {
     Init();
 
+    int result = EXIT_SUCCESS;
+
     while(1)
     {
         Update(0.0f);
         if (!Draw())
         {
+            result = EXIT_FAILURE;
             break;
         }
     }
 
     Destroy();
 
-    return 0;
+    return result;
 }
