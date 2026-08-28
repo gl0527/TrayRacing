@@ -581,42 +581,42 @@ static Material material_emerald(void)
 
 static Material material_gold(void)
 {
-    Vec3 eta = {.r = 0.17f, .g = 0.35f, .b = 1.5f};
-    Vec3 kappa = {.r = 3.1f, .g = 2.7f, .b = 1.9f};
+    Vec3 const n = {.r = 0.17055f, .g = 0.38442f, .b = 1.44250f};
+    Vec3 const k = {.r = 3.61240f, .g = 2.41110f, .b = 1.83330f};
 
-    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE);
+    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE);
 }
 
 static Material material_glass(void)
 {
-    Vec3 eta = {.r = 1.5f, .g = 1.5f, .b = 1.5f};
-    Vec3 kappa = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
+    Vec3 const n = {.r = 1.5f, .g = 1.5f, .b = 1.5f};
+    Vec3 const k = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
 
-    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE | MT_REFRACTIVE);
+    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE | MT_REFRACTIVE);
 }
 
 static Material material_silver(void)
 {
-    Vec3 eta = {.r = 0.14f, .g = 0.16f, .b = 0.13f};
-    Vec3 kappa = {.r = 4.1f, .g = 2.3f, .b = 3.1f};
+    Vec3 const n = {.r = 0.051585f, .g = 0.057345f, .b = 0.045050f};
+    Vec3 const k = {.r = 4.340000f, .g = 3.493800f, .b = 2.476400f};
 
-    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE);
+    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE);
 }
 
 static Material material_diamond(void)
 {
-    Vec3 eta = {.r = 2.4f, .g = 2.4f, .b = 2.4f};
-    Vec3 kappa = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
+    Vec3 const n = {.r = 2.410f, .g = 2.421f, .b = 2.435f};
+    Vec3 const k = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
 
-    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE | MT_REFRACTIVE);
+    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE | MT_REFRACTIVE);
 }
 
 static Material material_copper(void)
 {
-    Vec3 eta = {.r = 0.2f, .g = 1.1f, .b = 1.2f};
-    Vec3 kappa = {.r = 3.6f, .g = 2.6f, .b = 2.3f};
+    Vec3 const n = {.r = 0.27105f, .g = 0.67693f, .b = 1.31640f};
+    Vec3 const k = {.r = 3.60920f, .g = 2.62480f, .b = 2.29210f};
 
-    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, eta, kappa, MT_REFLECTIVE);
+    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE);
 }
 
 static float sphere_intersect_t(Sphere const *const sphere, Ray const *const ray)
