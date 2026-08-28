@@ -107,7 +107,7 @@ typedef struct Scene {
 } Scene;
 
 typedef struct Frame {
-    float frameTimeInSec;
+    double frameTimeInSec;
     Vec3 data[FRAME_WIDTH * FRAME_HEIGHT];
 } Frame;
 
@@ -943,7 +943,9 @@ static Vec3 scene_raytrace(Scene const *const scene, Ray const *const ray, uint8
 
 void scene_render(Scene const *const scene, Frame *const frame)
 {
-    clock_t const start = clock();
+    struct timespec start, end;
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
 
     float const normalizingFactor = 1.0f / SAMPLES_PER_PIXEL;
 
@@ -969,7 +971,9 @@ void scene_render(Scene const *const scene, Frame *const frame)
         }
     }
 
-    frame->frameTimeInSec = (float)(clock() - start) / CLOCKS_PER_SEC;
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    frame->frameTimeInSec = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1.0e9;
 }
 
 #endif // TRAYRACING_IMPLEMENTATION
