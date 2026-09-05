@@ -22,7 +22,7 @@ $(BIN): $(OBJ)
 
 $(OBJ): $(SRC) $(ROOT)/include/trayracing/trayracing.h
 	@mkdir -p $(@D)
-	$(CC) -o $@ -c $< $(CFLAGS) $(FLAGS) -Wa,-adhln -fverbose-asm -DSCREENSHOTS_FOLDER=\"$(SCREENSHOTS_DIR)\" $(INCLUDE_DIR) > $@.s
+	$(CC) -o $@ -c $< $(CFLAGS) $(FLAGS) -Wa,-adhln -fverbose-asm -DSCREENSHOTS_FOLDER=\"$(SCREENSHOT_DIR)\" $(INCLUDE_DIR) > $@.s
 
 clean:
 	@rm -f $(OBJ) $(BIN)

@@ -15,4 +15,4 @@ LFLAGS_GL := -lGL -lglut -lGLU -lGLEW -lm
 BIN_DIR := $(ROOT)/bin
 BUILD_DIR := $(ROOT)/build
 INCLUDE_DIR := -I$(ROOT)/include
-SCREENSHOTS_DIR := $(ROOT)/screenshots
+SCREENSHOT_DIR := $(ROOT)/screenshot
