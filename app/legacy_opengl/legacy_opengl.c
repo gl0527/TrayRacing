@@ -70,7 +70,7 @@ void onInitialization(void) {
 
 // Rajzolas, ha az alkalmazas ablak ervenytelenne valik, akkor ez a fuggveny hivodik meg
 void onDisplay(void) {
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);		// torlesi szin beallitasa
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f); 		// torlesi szin beallitasa
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // kepernyo torles
 
     scene_render(&scene, &frame);
@@ -84,7 +84,7 @@ void onDisplay(void) {
 
     glDrawPixels(FRAME_WIDTH, FRAME_HEIGHT, GL_RGB, GL_FLOAT, frame.data);
 	
-    glutSwapBuffers();     				// Buffercsere: rajzolas vege
+    glutSwapBuffers(); 					// Buffercsere: rajzolas vege
 }
 
 // Billentyuzet esemenyeket lekezelo fuggveny (lenyomas)
@@ -122,7 +122,7 @@ void onMouseMotion(int x, int y)
 
 // `Idle' esemenykezelo, jelzi, hogy az ido telik, az Idle esemenyek frekvenciajara csak a 0 a garantalt minimalis ertek
 void onIdle(void) {
-    float time = glutGet(GLUT_ELAPSED_TIME) * 0.001f;		// program inditasa ota eltelt ido
+    float time = glutGet(GLUT_ELAPSED_TIME) * 0.001f; 		// program inditasa ota eltelt ido
 
     tick = (time - (int)time < 1e-1f) ? 1 : 0;
 
@@ -144,28 +144,28 @@ void onIdle(void) {
 
 // A C++ program belepesi pontja, a main fuggvenyt mar nem szabad bantani
 int main(int argc, char **argv) {
-    glutInit(&argc, argv); 				// GLUT inicializalasa
-    glutInitWindowSize(SCREENWIDTH, SCREENHEIGHT);			// Alkalmazas ablak kezdeti merete 600x600 pixel 
-    glutInitWindowPosition(100, 100);			// Az elozo alkalmazas ablakhoz kepest hol tunik fel
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);	// 8 bites R,G,B,A + dupla buffer + melyseg buffer
+    glutInit(&argc, argv); 			// GLUT inicializalasa
+    glutInitWindowSize(SCREENWIDTH, SCREENHEIGHT); 			// Alkalmazas ablak kezdeti merete 600x600 pixel 
+    glutInitWindowPosition(100, 100); 			// Az elozo alkalmazas ablakhoz kepest hol tunik fel
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH); 	// 8 bites R,G,B,A + dupla buffer + melyseg buffer
 
-    glutCreateWindow("Trayracing");		// Alkalmazas ablak megszuletik es megjelenik a kepernyon
+    glutCreateWindow("Trayracing"); 		// Alkalmazas ablak megszuletik es megjelenik a kepernyon
 
-    glMatrixMode(GL_MODELVIEW);				// A MODELVIEW transzformaciot egysegmatrixra inicializaljuk
+    glMatrixMode(GL_MODELVIEW); 				// A MODELVIEW transzformaciot egysegmatrixra inicializaljuk
     glLoadIdentity();
-    glMatrixMode(GL_PROJECTION);			// A PROJECTION transzformaciot egysegmatrixra inicializaljuk
+    glMatrixMode(GL_PROJECTION); 			// A PROJECTION transzformaciot egysegmatrixra inicializaljuk
     glLoadIdentity();
 
-    onInitialization();					// Az altalad irt inicializalast lefuttatjuk
+    onInitialization(); 				// Az altalad irt inicializalast lefuttatjuk
 
-    glutDisplayFunc(onDisplay);				// Esemenykezelok regisztralasa
+    glutDisplayFunc(onDisplay); 				// Esemenykezelok regisztralasa
     glutMouseFunc(onMouse); 
     glutIdleFunc(onIdle);
     glutKeyboardFunc(onKeyboard);
     glutKeyboardUpFunc(onKeyboardUp);
     glutMotionFunc(onMouseMotion);
 
-    glutMainLoop();					// Esemenykezelo hurok
+    glutMainLoop(); 					// Esemenykezelo hurok
     
     return 0;
 }
