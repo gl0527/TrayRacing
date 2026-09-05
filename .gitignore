@@ -1,3 +1,4 @@
-bin/
-build/
-screenshots/
+# build artifacts
+/build/
+/bin/
+/screenshots/
