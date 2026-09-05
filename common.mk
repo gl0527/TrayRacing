@@ -1,6 +1,6 @@
 # Shared settings for per-app Makefiles
 # Expect TOP/ROOT to be passed from the top-level make when running in subdirs:
-#   $(MAKE) -C examples/legacy_opengl ROOT=$(CURDIR) MODE=release
+#   $(MAKE) -C app/legacy_opengl ROOT=$(CURDIR) MODE=release
 ROOT ?= $(CURDIR)
 CC := gcc
 
@@ -15,4 +15,5 @@ LFLAGS_GL := -lGL -lglut -lGLU -lGLEW -lm
 BIN_DIR := $(ROOT)/bin
 BUILD_DIR := $(ROOT)/build
 INCLUDE_DIR := -I$(ROOT)/include
-SCREENSHOT_DIR := $(ROOT)/screenshot
+# Ensure trailing slash so SCREENSHOTS_FOLDER macro concatenation in code works
+SCREENSHOT_DIR := $(ROOT)/screenshot/
