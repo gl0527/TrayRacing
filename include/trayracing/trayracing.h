@@ -708,7 +708,7 @@ void frame_save_to_stdout(Frame const *const frame)
     // Move the cursor back to the top-left corner (0,0)
     printf("\033[H");
 
-    printf("%s", frame_string);
+    printf("%s\n", frame_string);
 
     fflush(stdout);
 }

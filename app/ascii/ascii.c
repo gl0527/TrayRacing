@@ -4,9 +4,22 @@
 #define TRAYRACING_IMPLEMENTATION
 #include "trayracing/trayracing.h"
 
+#include <signal.h>
+
 ResourcePool resourcePool;
 Frame frame;
 Scene scene;
+
+volatile sig_atomic_t keep_running = 1;
+
+static void handle_sigint(int sig)
+{
+    // Show cursor
+    printf("\033[?25h");
+    fflush(stdout);
+
+    keep_running = 0;
+}
 
 static void Init(void)
 {
@@ -65,6 +78,9 @@ static void Draw(void)
 
 int main(int argc, char **argv)
 {
+    // Register the signal handler for SIGINT (Ctrl+C)
+    signal(SIGINT, handle_sigint);
+
     Init();
 
     int result = EXIT_SUCCESS;
@@ -75,16 +91,13 @@ int main(int argc, char **argv)
     // Hide cursor
     printf("\033[?25l");
 
-    while(1)
+    while(keep_running)
     {
         Update(0.0f);
         Draw();
     }
 
     Destroy();
-
-    // Show cursor
-    printf("\033[?25h");
 
     return result;
 }
