@@ -192,6 +192,7 @@ TRAYRACING_DECL Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specul
 TRAYRACING_DECL ResourcePool resourcepool_create(void);
 TRAYRACING_DECL void resourcepool_add_material(ResourcePool *const pResourcePool, Material material);
 
+TRAYRACING_DECL void frame_save_to_stdout(Frame const *const frame);
 TRAYRACING_DECL bool frame_save_to_file(Frame const *const frame);
 TRAYRACING_DECL void frame_render_frametime(Frame *const frame);
 
@@ -668,6 +669,42 @@ void resourcepool_add_material(ResourcePool *const pResourcePool, Material mater
     if (pResourcePool->currentMaterialCount < MAX_MATERIAL_COUNT) {
         pResourcePool->materials[pResourcePool->currentMaterialCount++] = material;
     }
+}
+
+void frame_save_to_stdout(Frame const *const frame)
+{
+    static uint32_t counter = 0;
+
+    if (counter > 999)
+    {
+        printf("No more screenshots will be written in this session!\n");
+        return;
+    }
+
+    char const ramp[] = " .:-=+*#%@";
+    uint8_t const max_index = sizeof(ramp) - 1;
+
+    // Reset terminal
+    printf("\033[2J\033[3J\033[H");
+
+    for (int32_t y = FRAME_HEIGHT - 1; y >= 0; --y)
+    {
+        for (int32_t x = 0; x < FRAME_WIDTH; ++x)
+        {
+            Vec3 const *const pixel = &(frame->data[y * FRAME_WIDTH + x]);
+
+            float const r = clamp(pixel->r, 0.0f, 1.0f);
+            float const g = clamp(pixel->g, 0.0f, 1.0f);
+            float const b = clamp(pixel->b, 0.0f, 1.0f);
+
+            float const brightness = (r + g + b) / 3.0f;
+
+            printf("%c", ramp[(uint8_t)(max_index * brightness)]);
+        }
+        printf("\n");
+    }
+
+    fflush(stdout);
 }
 
 bool frame_save_to_file(Frame const *const frame)
