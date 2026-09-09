@@ -83,8 +83,6 @@ int main(int argc, char **argv)
 
     Init();
 
-    int result = EXIT_SUCCESS;
-
     // Clear screen
     printf("\033[2J");
 
@@ -99,6 +97,6 @@ int main(int argc, char **argv)
 
     Destroy();
 
-    return result;
+    return 0;
 }
 
