@@ -69,6 +69,12 @@ int main(int argc, char **argv)
 
     int result = EXIT_SUCCESS;
 
+    // Clear screen
+    printf("\033[2J");
+
+    // Hide cursor
+    printf("\033[?25l");
+
     while(1)
     {
         Update(0.0f);
@@ -76,6 +82,9 @@ int main(int argc, char **argv)
     }
 
     Destroy();
+
+    // Show cursor
+    printf("\033[?25h");
 
     return result;
 }

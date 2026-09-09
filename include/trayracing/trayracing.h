@@ -681,11 +681,11 @@ void frame_save_to_stdout(Frame const *const frame)
         return;
     }
 
-    char const ramp[] = " .:-=+*#%@";
-    uint8_t const max_index = sizeof(ramp) - 1;
+    char frame_string[(FRAME_WIDTH + 1) * (FRAME_HEIGHT) + 1];
+    uint32_t index = 0;
 
-    // Reset terminal
-    printf("\033[2J\033[3J\033[H");
+    char const ramp[] = " .:-=+*#%@";
+    uint8_t const ramp_size = 10;
 
     for (int32_t y = FRAME_HEIGHT - 1; y >= 0; --y)
     {
@@ -699,10 +699,16 @@ void frame_save_to_stdout(Frame const *const frame)
 
             float const brightness = (r + g + b) / 3.0f;
 
-            printf("%c", ramp[(uint8_t)(max_index * brightness)]);
+            frame_string[index++] = ramp[(uint8_t)((ramp_size - 1) * brightness)];
         }
-        printf("\n");
+        frame_string[index++] = '\n';
     }
+    frame_string[index] = '\0';
+
+    // Move the cursor back to the top-left corner (0,0)
+    printf("\033[H");
+
+    printf("%s", frame_string);
 
     fflush(stdout);
 }
