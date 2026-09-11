@@ -685,7 +685,9 @@ void frame_save_to_stdout(Frame const *const frame)
     uint32_t index = 0;
 
     char const ramp[] = " .:-=+*#%@";
-    uint8_t const ramp_size = 10;
+
+    // Calculate ramp_max_index by ignoring the '\0' at the end of the string.
+    uint8_t const ramp_max_index = sizeof(ramp) - 2;
 
     for (int32_t y = FRAME_HEIGHT - 1; y >= 0; --y)
     {
@@ -700,7 +702,7 @@ void frame_save_to_stdout(Frame const *const frame)
             // Use the luminosity formula to calculate brightness.
             float const brightness = 0.299f * r + 0.587f * g + 0.114f * b;
 
-            frame_string[index++] = ramp[(uint8_t)((ramp_size - 1) * brightness)];
+            frame_string[index++] = ramp[(uint8_t)(ramp_max_index * brightness)];
         }
         frame_string[index++] = '\n';
     }
