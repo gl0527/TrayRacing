@@ -697,7 +697,8 @@ void frame_save_to_stdout(Frame const *const frame)
             float const g = clamp(pixel->g, 0.0f, 1.0f);
             float const b = clamp(pixel->b, 0.0f, 1.0f);
 
-            float const brightness = (r + g + b) / 3.0f;
+            // Use the luminosity formula to calculate brightness.
+            float const brightness = 0.299f * r + 0.587f * g + 0.114f * b;
 
             frame_string[index++] = ramp[(uint8_t)((ramp_size - 1) * brightness)];
         }
