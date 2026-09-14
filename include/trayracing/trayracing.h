@@ -462,32 +462,24 @@ Vec3 vec3_reflect(Vec3 n, Vec3 v)
 
 Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx)
 {
+    // Use the average refractive index across channels
+    float eta = (refrIdx.x + refrIdx.y + refrIdx.z) * 0.333333f;
+
     float cosa = vec3_dot(n, i);
     if (cosa > 0) {
         cosa = -cosa;
-        refrIdx.x = 1.0f / refrIdx.x;
-        refrIdx.y = 1.0f / refrIdx.y;
-        refrIdx.z = 1.0f / refrIdx.z;
+        eta = 1.0f / eta;
     }
-    float const num = 1.0f - cosa * cosa;
 
-    float const vec3_invRefrIdxX = 1.0f / refrIdx.x;
-    float const vec3_invRefrIdxY = 1.0f / refrIdx.y;
-    float const vec3_invRefrIdxZ = 1.0f / refrIdx.z;
+    float const invEta = 1.0f / eta;
+    float const discriminant = 1.0f - (1.0f - cosa * cosa) * invEta * invEta;
 
-    float const discX = 1.0f - num * vec3_invRefrIdxX * vec3_invRefrIdxX;
-    float const discY = 1.0f - num * vec3_invRefrIdxY * vec3_invRefrIdxY;
-    float const discZ = 1.0f - num * vec3_invRefrIdxZ * vec3_invRefrIdxZ;
-
-    if (discX < 0.0f || discY < 0.0f || discZ < 0.0f)
-    {
+    if (discriminant < 0.0f) {
         return vec3_reflect(n, i);
     }
 
-    return vec3_add(vec3_add(
-                vec3_add(vec3_scale(vec3_invRefrIdxX, i), vec3_scale(cosa * vec3_invRefrIdxX - sqrtf(discX), n)),
-                vec3_add(vec3_scale(vec3_invRefrIdxY, i), vec3_scale(cosa * vec3_invRefrIdxY - sqrtf(discY), n))),
-                vec3_add(vec3_scale(vec3_invRefrIdxZ, i), vec3_scale(cosa * vec3_invRefrIdxZ - sqrtf(discZ), n)));
+    return vec3_add(vec3_scale(invEta, i),
+                    vec3_scale(invEta * cosa - sqrtf(discriminant), n));
 }
 
 Vec3 vec3_lerp(Vec3 a, Vec3 b, float t)
