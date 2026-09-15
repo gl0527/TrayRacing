@@ -981,6 +981,14 @@ static Vec3 scene_raytrace(Scene const *const scene, Ray const *const ray, uint8
 
 void scene_render(Scene const *const scene, Frame *const frame)
 {
+    static const Vec2 pixelSamples[SAMPLES_PER_PIXEL] =
+    {
+        {.x = 0.375f, .y = 0.125f },
+        {.x = 0.875f, .y = 0.375f },
+        {.x = 0.125f, .y = 0.675f },
+        {.x = 0.675f, .y = 0.875f }
+    };
+
     struct timespec start, end;
 
     clock_gettime(CLOCK_MONOTONIC, &start);
@@ -991,13 +999,6 @@ void scene_render(Scene const *const scene, Frame *const frame)
     {
         for (uint32_t x = 0; x < FRAME_WIDTH; ++x)
         {
-            Vec2 pixelSamples[SAMPLES_PER_PIXEL] =
-            {
-                {.x = 0.375f, .y = 0.125f },
-                {.x = 0.875f, .y = 0.375f },
-                {.x = 0.125f, .y = 0.675f },
-                {.x = 0.675f, .y = 0.875f }
-            };
             Vec3 pixelColor = vec3_zero();
             for (uint8_t sample = 0; sample < SAMPLES_PER_PIXEL; ++sample)
             {
@@ -1011,7 +1012,7 @@ void scene_render(Scene const *const scene, Frame *const frame)
 
     clock_gettime(CLOCK_MONOTONIC, &end);
 
-    frame->frameTimeInSec = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1.0e9;
+    frame->frameTimeInSec = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) * 1.0e-9;
 }
 
 #endif // TRAYRACING_IMPLEMENTATION
