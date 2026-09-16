@@ -615,21 +615,22 @@ static Material material_copper(void)
 static float sphere_intersect_t(Sphere const *const sphere, Ray const *const ray)
 {
     Vec3 const dist = vec3_sub(ray->origin, sphere->center);
-    float const b = 2.0f * vec3_dot(dist, ray->direction);
-    float const c = vec3_length_sqr(dist) - sphere->radius * sphere->radius;
-    float const disc = b * b - 4.0f * c;
+    float const r = sphere->radius;
+    float const half_b = vec3_dot(dist, ray->direction);
+    float const c = vec3_length_sqr(dist) - r * r;
+    float const disc = half_b * half_b - c;
 
     if (disc < 0.0f) {
         return -1.0f;
     }
-    float const sqrt_disc = sqrtf(disc);
-    float t = -0.5f * (b + sqrt_disc);
-    if (t > 0.0f) {
+    float const root = sqrtf(disc);
+    float t = -half_b - root;
+    if (t > PRECISION) {
         return t;
     }
-    t += sqrt_disc;
+    t = -half_b + root;
 
-    return t > 0.0f ? t : -1.0f;
+    return t > PRECISION ? t : -1.0f;
 }
 
 static Hit sphere_intersect(Sphere const *const sphere, Ray const *const ray, float t)
