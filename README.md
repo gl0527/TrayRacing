@@ -1,3 +1,5 @@
+![Trayracing](./asset/logo.png)
+
 # TrayRacing
 
 TrayRacing is a small, dependency-light ray tracer written in C. It renders scenes made of spheres and directional lights, with rough, reflective, and refractive materials. The project includes a reusable single-header ray-tracing library plus three example applications: terminal ASCII output, PPM image output without a GUI, and a legacy OpenGL/GLUT viewer.
