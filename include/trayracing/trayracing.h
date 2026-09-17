@@ -668,9 +668,9 @@ void frame_save_to_stdout(Frame const *const frame)
 {
     static uint32_t counter = 0;
 
-    if (counter > 999)
+    if (counter++ > 999)
     {
-        printf("No more screenshots will be written in this session!\n");
+        printf("No more frames will be written to stdout in this session!\n");
         return;
     }
 
