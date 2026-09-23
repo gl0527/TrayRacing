@@ -503,8 +503,9 @@ Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fovy)
 
 static Ray camera_get_ray(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight, float xOffset, float yOffset)
 {
+    float const aspect_ratio = (float)screenWidth / screenHeight;
     float const half_height = tanf(camera->fovy * 0.5f);
-    float const half_width = half_height * screenWidth / screenHeight;
+    float const half_width = half_height * aspect_ratio;
 
     Vec3 const pixel_pos = vec3_add(
                 vec3_add(vec3_add(camera->eye, camera->forward),
