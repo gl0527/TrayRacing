@@ -52,10 +52,9 @@ typedef struct Light {
 
 typedef struct Camera {
     Vec3 eye;
-    Vec3 lookat;
+    Vec3 forward;
     Vec3 right;
     Vec3 up;
-    Vec3 forward;
     float fovy;
 } Camera;
 
@@ -493,12 +492,10 @@ Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fovy)
 {
     Camera camera;
 
-    Vec3 const w = vec3_sub(lookat, eye);
-    camera.right = vec3_norm(vec3_cross(w, up));
-    camera.up = vec3_norm(vec3_cross(camera.right, w));
-    camera.forward = vec3_norm(w);
     camera.eye = eye;
-    camera.lookat = lookat;
+    camera.forward = vec3_norm(vec3_sub(lookat, eye));
+    camera.right = vec3_norm(vec3_cross(camera.forward, up));
+    camera.up = vec3_norm(vec3_cross(camera.right, camera.forward));
     camera.fovy = fovy;
 
     return camera;
@@ -506,14 +503,13 @@ Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fovy)
 
 static Ray camera_get_ray(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight, float xOffset, float yOffset)
 {
-    Vec3 const w = vec3_sub(camera->eye, camera->lookat);
-    float const half_height = vec3_length(w) * tanf(camera->fovy * 0.5f);
+    float const half_height = tanf(camera->fovy * 0.5f);
     float const half_width = half_height * screenWidth / screenHeight;
 
     Vec3 const pixel_pos = vec3_add(
-                vec3_add(camera->lookat,
-                vec3_scale((2.0f * (x + xOffset) / screenWidth - 1) * half_width, camera->right)),
-                vec3_scale((2.0f * (y + yOffset) / screenHeight - 1) * half_height, camera->up));
+                vec3_add(vec3_add(camera->eye, camera->forward),
+                vec3_scale((2.0f * (x + xOffset) / screenWidth - 1.0f) * half_width, camera->right)),
+                vec3_scale((2.0f * (y + yOffset) / screenHeight - 1.0f) * half_height, camera->up));
 
     return LITERAL(Ray){camera->eye, vec3_norm(vec3_sub(pixel_pos, camera->eye))};
 }
