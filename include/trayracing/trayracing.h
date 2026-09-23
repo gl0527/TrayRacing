@@ -55,6 +55,8 @@ typedef struct Camera {
     Vec3 lookat;
     Vec3 right;
     Vec3 up;
+    Vec3 forward;
+    float fovy;
 } Camera;
 
 typedef enum MaterialType
@@ -185,7 +187,7 @@ TRAYRACING_DECL Vec3 vec3_reflect(Vec3 n, Vec3 v);
 TRAYRACING_DECL Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx);
 TRAYRACING_DECL Vec3 vec3_lerp(Vec3 a, Vec3 b, float t);
 
-TRAYRACING_DECL Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fov);
+TRAYRACING_DECL Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fovy);
 
 TRAYRACING_DECL Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags);
 
@@ -487,24 +489,33 @@ Vec3 vec3_lerp(Vec3 a, Vec3 b, float t)
     return vec3_add(vec3_scale(1.0f - t, a), vec3_scale(t, b));
 }
 
-Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fov)
+Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fovy)
 {
     Camera camera;
 
+    Vec3 const w = vec3_sub(lookat, eye);
+    camera.right = vec3_norm(vec3_cross(w, up));
+    camera.up = vec3_norm(vec3_cross(camera.right, w));
+    camera.forward = vec3_norm(w);
     camera.eye = eye;
     camera.lookat = lookat;
-    Vec3 const w = vec3_sub(eye, camera.lookat);
-    float const windowSize = vec3_length(w) * tanf(fov * 0.5f);
-    camera.right = vec3_scale(windowSize, vec3_norm(vec3_cross(up, w)));
-    camera.up = vec3_scale(windowSize, vec3_norm(vec3_cross(w, camera.right)));
+    camera.fovy = fovy;
 
     return camera;
 }
 
 static Ray camera_get_ray(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight, float xOffset, float yOffset)
 {
-    Vec3 const dir = vec3_sub(vec3_add(vec3_add(camera->lookat, vec3_scale((2.0f * (x + xOffset) / screenWidth - 1), camera->right)), vec3_scale((2.0f * (y + yOffset) / screenHeight - 1), camera->up)), camera->eye);
-    return LITERAL(Ray){camera->eye, vec3_norm(dir)};
+    Vec3 const w = vec3_sub(camera->eye, camera->lookat);
+    float const half_height = vec3_length(w) * tanf(camera->fovy * 0.5f);
+    float const half_width = half_height * screenWidth / screenHeight;
+
+    Vec3 const pixel_pos = vec3_add(
+                vec3_add(camera->lookat,
+                vec3_scale((2.0f * (x + xOffset) / screenWidth - 1) * half_width, camera->right)),
+                vec3_scale((2.0f * (y + yOffset) / screenHeight - 1) * half_height, camera->up));
+
+    return LITERAL(Ray){camera->eye, vec3_norm(vec3_sub(pixel_pos, camera->eye))};
 }
 
 Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags)
@@ -638,7 +649,7 @@ static Hit sphere_intersect(Sphere const *const sphere, Ray const *const ray, fl
     Hit hit;
 
     hit.t = t;
-    hit.position = vec3_add(ray->origin, vec3_scale(hit.t, ray->direction));
+    hit.position = vec3_add(ray->origin, vec3_scale(hit.t, ray->direction)); // TODO there could be a ray_at(ray, hit.t); function for this
     hit.normal = vec3_scale(1.0f / sphere->radius, vec3_sub(hit.position, sphere->center));
     if (vec3_dot(ray->direction, hit.normal) > 0.0f) {
         hit.normal = vec3_inv(hit.normal);
