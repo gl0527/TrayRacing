@@ -1,3 +1,6 @@
+#define FRAME_WIDTH 900
+#define FRAME_HEIGHT 600
+
 #define TRAYRACING_IMPLEMENTATION
 #include "trayracing/trayracing.h"
 
@@ -8,9 +11,6 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
-
-#define SCREENWIDTH 600
-#define SCREENHEIGHT 600
 
 Frame frame;
 
@@ -29,7 +29,7 @@ char frame_time_str[32] = "Frame time";
 
 void onInitialization(void) {
     srand(time(NULL));
-	glViewport(0, 0, SCREENWIDTH, SCREENHEIGHT);
+	glViewport(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 
     resourcePool = resourcepool_create();
 
@@ -145,7 +145,7 @@ void onIdle(void) {
 // A C++ program belepesi pontja, a main fuggvenyt mar nem szabad bantani
 int main(int argc, char **argv) {
     glutInit(&argc, argv); 			// GLUT inicializalasa
-    glutInitWindowSize(SCREENWIDTH, SCREENHEIGHT); 			// Alkalmazas ablak kezdeti merete 600x600 pixel 
+    glutInitWindowSize(FRAME_WIDTH, FRAME_HEIGHT); 			// Alkalmazas ablak kezdeti merete
     glutInitWindowPosition(100, 100); 			// Az elozo alkalmazas ablakhoz kepest hol tunik fel
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH); 	// 8 bites R,G,B,A + dupla buffer + melyseg buffer
 
