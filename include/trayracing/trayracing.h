@@ -187,6 +187,7 @@ TRAYRACING_DECL Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx);
 TRAYRACING_DECL Vec3 vec3_lerp(Vec3 a, Vec3 b, float t);
 
 TRAYRACING_DECL Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fovy);
+TRAYRACING_DECL void camera_set(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fovy);
 
 TRAYRACING_DECL Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags);
 
@@ -492,13 +493,18 @@ Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fovy)
 {
     Camera camera;
 
-    camera.eye = eye;
-    camera.forward = vec3_norm(vec3_sub(lookat, eye));
-    camera.right = vec3_norm(vec3_cross(camera.forward, up));
-    camera.up = vec3_norm(vec3_cross(camera.right, camera.forward));
-    camera.tanHalfFovY = tanf(fovy * 0.5f);
+    camera_set(&camera, eye, lookat, up, fovy);
 
     return camera;
+}
+
+void camera_set(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fovy)
+{
+    camera->eye = eye;
+    camera->forward = vec3_norm(vec3_sub(lookat, eye));
+    camera->right = vec3_norm(vec3_cross(camera->forward, up));
+    camera->up = vec3_norm(vec3_cross(camera->right, camera->forward));
+    camera->tanHalfFovY = tanf(fovy * 0.5f);
 }
 
 static Ray camera_get_ray(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight, float xOffset, float yOffset)
