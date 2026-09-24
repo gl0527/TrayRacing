@@ -43,10 +43,10 @@ void onInitialization(void) {
     Vec3 eye = {.x = 0.0f, .y = 2.0f, .z = 4.0f};
     Vec3 up = {.x = 0.0f, .y = 1.0f, .z = 0.0f};
     Vec3 lookat = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
-    float fov = deg2rad(60.0f);
+    float fovy = deg2rad(60.0f);
     Vec3 ambient = {.x = 0.5f, .y = 0.6f, .z = 0.8f};
 
-    Camera camera = camera_create(eye, lookat, up, fov);
+    Camera camera = camera_create(eye, lookat, up, fovy);
     scene = scene_create(camera, ambient);
 
     Vec3 lightDir = {.x = -1.0f, .y = -1.0f, .z = -1.0f};
@@ -132,9 +132,9 @@ void onIdle(void) {
     Vec3 eye = {.x = 3.5f * cosf(0.25f * time), .y = scene.camera.eye.y, .z = 3.5f * sinf(0.25f * time)};
     Vec3 up = {.x = 0.0f, .y = 1.0f, .z = 0.0f};
     Vec3 lookat = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
-    float fov = deg2rad(60.0f);
+    float fovy = deg2rad(60.0f);
 
-    scene.camera = camera_create(eye, lookat, up, fov);
+    camera_set(&scene.camera, eye, lookat, up, fovy);
 
     glutPostRedisplay();
 }

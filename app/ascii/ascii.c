@@ -35,10 +35,10 @@ static void Init(void)
     Vec3 eye = {.x = 0.0f, .y = 2.0f, .z = 5.0f};
     Vec3 up = {.x = 0.0f, .y = 1.0f, .z = 0.0f};
     Vec3 lookat = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
-    float fov = deg2rad(60.0f);
+    float fovy = deg2rad(60.0f);
     Vec3 ambient = {.r = 0.7f, .g = 0.7f, .b = 0.8f};
 
-    Camera camera = camera_create(eye, lookat, up, fov);
+    Camera camera = camera_create(eye, lookat, up, fovy);
     scene = scene_create(camera, ambient);
 
     Vec3 lightDir = {.x = -1.0f, .y = -1.0f, .z = -1.0f};
