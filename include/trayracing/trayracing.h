@@ -55,7 +55,7 @@ typedef struct Camera {
     Vec3 forward;
     Vec3 right;
     Vec3 up;
-    float fovy;
+    float tanHalfFovY;
 } Camera;
 
 typedef enum MaterialType
@@ -496,7 +496,7 @@ Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fovy)
     camera.forward = vec3_norm(vec3_sub(lookat, eye));
     camera.right = vec3_norm(vec3_cross(camera.forward, up));
     camera.up = vec3_norm(vec3_cross(camera.right, camera.forward));
-    camera.fovy = fovy;
+    camera.tanHalfFovY = tanf(fovy * 0.5f);
 
     return camera;
 }
@@ -504,13 +504,13 @@ Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fovy)
 static Ray camera_get_ray(Camera const *const camera, uint32_t x, uint32_t y, uint32_t screenWidth, uint32_t screenHeight, float xOffset, float yOffset)
 {
     float const aspect_ratio = (float)screenWidth / screenHeight;
-    float const half_height = tanf(camera->fovy * 0.5f);
-    float const half_width = half_height * aspect_ratio;
+    float const tan_half_fovy = camera->tanHalfFovY;
+    float const half_width = tan_half_fovy * aspect_ratio;
 
     Vec3 const pixel_pos = vec3_add(
                 vec3_add(vec3_add(camera->eye, camera->forward),
                 vec3_scale((2.0f * (x + xOffset) / screenWidth - 1.0f) * half_width, camera->right)),
-                vec3_scale((2.0f * (y + yOffset) / screenHeight - 1.0f) * half_height, camera->up));
+                vec3_scale((2.0f * (y + yOffset) / screenHeight - 1.0f) * tan_half_fovy, camera->up));
 
     return LITERAL(Ray){camera->eye, vec3_norm(vec3_sub(pixel_pos, camera->eye))};
 }
