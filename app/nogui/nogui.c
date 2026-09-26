@@ -25,7 +25,8 @@ static void Init(void)
     Vec3 ambient = {.r = 0.7f, .g = 0.7f, .b = 0.8f};
 
     Camera camera = camera_create(eye, lookat, up, fovy);
-    scene = scene_create(camera, ambient);
+    uint8_t const maxRayDepth = 5;
+    scene = scene_create(camera, ambient, maxRayDepth);
 
     Vec3 lightDir = {.x = -1.0f, .y = -1.0f, .z = -1.0f};
     Light light = {vec3_norm(lightDir), {.r = 0.8f, .g = 0.8f, .b = 0.8f}};

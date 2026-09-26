@@ -105,6 +105,7 @@ typedef struct Scene {
     Light lights[MAX_LIGHT_COUNT];
     Camera camera;
     Vec3 ambientLight;
+    uint8_t maxRayDepth;
 } Scene;
 
 typedef struct Frame {
@@ -202,7 +203,7 @@ TRAYRACING_DECL void line_render(Frame *const frame, Vec2 start, Vec2 end, Vec3 
 
 TRAYRACING_DECL void text_render(Frame *const frame, char const *text, Vec2 position, uint8_t size, Vec3 color);
 
-TRAYRACING_DECL Scene scene_create(Camera cam, Vec3 La);
+TRAYRACING_DECL Scene scene_create(Camera cam, Vec3 La, uint8_t maxRayDepth);
 TRAYRACING_DECL void scene_add_sphere(Scene *const scene, Sphere sphere);
 TRAYRACING_DECL void scene_add_light(Scene *const scene, Light light);
 TRAYRACING_DECL void scene_render(Scene const *const scene, Frame *const frame);
@@ -874,7 +875,7 @@ void text_render(Frame *const frame, char const *text, Vec2 position, uint8_t si
     }
 }
 
-Scene scene_create(Camera cam, Vec3 La)
+Scene scene_create(Camera cam, Vec3 La, uint8_t maxRayDepth)
 {
     Scene scene;
 
@@ -882,6 +883,7 @@ Scene scene_create(Camera cam, Vec3 La)
     scene.currentLightCount = 0;
     scene.camera = cam;
     scene.ambientLight = La;
+    scene.maxRayDepth = maxRayDepth;
 
     return scene;
 }
@@ -946,7 +948,7 @@ static bool scene_shadowcast(Scene const *const scene, Ray const *const ray)
 
 static Vec3 scene_raytrace(Scene const *const scene, Ray const *const ray, uint8_t depth)
 {
-    if (depth > 5)
+    if (depth >= scene->maxRayDepth)
     {
         return scene->ambientLight;
     }
