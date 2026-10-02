@@ -653,7 +653,7 @@ static Hit sphere_intersect(Sphere const *const sphere, Ray const *const ray, fl
     Hit hit;
 
     hit.t = t;
-    hit.position = vec3_add(ray->origin, vec3_scale(hit.t, ray->direction)); // TODO there could be a ray_at(ray, hit.t); function for this
+    hit.position = vec3_add(ray->origin, vec3_scale(hit.t, ray->direction));
     hit.normal = vec3_scale(1.0f / sphere->radius, vec3_sub(hit.position, sphere->center));
     if (vec3_dot(ray->direction, hit.normal) > 0.0f) {
         hit.normal = vec3_inv(hit.normal);
