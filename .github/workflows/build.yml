@@ -1,0 +1,73 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main, develop ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libgl1-mesa-dev libglut-dev libglew-dev
+
+      - name: Build (Release)
+        run: |
+          make -C app/nogui MODE=release CC=${{ matrix.compiler }}
+          make -C app/ascii MODE=release CC=${{ matrix.compiler }}
+
+      - name: Build (Debug)
+        run: |
+          make -C app/nogui MODE=debug CC=${{ matrix.compiler }}
+          make -C app/ascii MODE=debug CC=${{ matrix.compiler }}
+
+      - name: Verify binaries exist
+        run: |
+          ls -lh bin/
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install MinGW
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-make
+
+      - name: Build with MinGW (Release)
+        shell: msys2 {0}
+        run: |
+          make -C app/nogui MODE=release SCREENSHOTS_FOLDER=\"screenshot/\"
+          make -C app/ascii MODE=release SCREENSHOTS_FOLDER=\"screenshot/\"
+
+      - name: Build with MinGW (Debug)
+        shell: msys2 {0}
+        run: |
+          make -C app/nogui MODE=debug SCREENSHOTS_FOLDER=\"screenshot/\"
+          make -C app/ascii MODE=debug SCREENSHOTS_FOLDER=\"screenshot/\"
+
+      - name: Verify binaries exist
+        shell: cmd
+        run: |
+          dir bin\
+
+  code-style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for basic correctness
+        run: |
+          gcc -fsyntax-only -Iinclude include/trayracing/trayracing.h
+          grep -q "TRAYRACING_H" include/trayracing/trayracing.h
