@@ -195,7 +195,7 @@ TRAYRACING_DECL Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specul
 TRAYRACING_DECL ResourcePool resourcepool_create(void);
 TRAYRACING_DECL void resourcepool_add_material(ResourcePool *const pResourcePool, Material material);
 
-TRAYRACING_DECL void frame_save_to_stdout(Frame const *const frame);
+TRAYRACING_DECL bool frame_save_to_stdout(Frame const *const frame);
 TRAYRACING_DECL bool frame_save_to_file(Frame const *const frame);
 TRAYRACING_DECL void frame_render_frametime(Frame *const frame);
 
@@ -679,14 +679,14 @@ void resourcepool_add_material(ResourcePool *const pResourcePool, Material mater
     }
 }
 
-void frame_save_to_stdout(Frame const *const frame)
+bool frame_save_to_stdout(Frame const *const frame)
 {
     static uint32_t counter = 0;
 
     if (counter++ > 999)
     {
-        printf("No more frames will be written to stdout in this session!\n");
-        return;
+        fprintf(stderr, "No more frames will be written to stdout in this session!\n");
+        return false;
     }
 
     char frame_string[(FRAME_WIDTH + 1) * (FRAME_HEIGHT) + 1];
@@ -722,6 +722,8 @@ void frame_save_to_stdout(Frame const *const frame)
     printf("%s\n", frame_string);
 
     fflush(stdout);
+
+    return true;
 }
 
 bool frame_save_to_file(Frame const *const frame)
@@ -731,7 +733,7 @@ bool frame_save_to_file(Frame const *const frame)
 
     if (counter > 999)
     {
-        printf("No more screenshots will be written in this session!\n");
+        fprintf(stderr, "No more screenshots will be written in this session!\n");
         return false;
     }
 

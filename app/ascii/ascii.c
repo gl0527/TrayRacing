@@ -66,10 +66,11 @@ static void Update(float dt)
 {
 }
 
-static void Draw(void)
+static bool Draw(void)
 {
     scene_render(&scene, &frame);
-    frame_save_to_stdout(&frame);
+
+    return frame_save_to_stdout(&frame);
 }
 
 int main(int argc, char **argv)
@@ -88,7 +89,10 @@ int main(int argc, char **argv)
     while(keep_running)
     {
         Update(0.0f);
-        Draw();
+        if (!Draw())
+        {
+            keep_running = 0;
+        }
     }
 
     Destroy();
