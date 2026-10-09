@@ -12,18 +12,9 @@ Scene scene;
 
 volatile sig_atomic_t keep_running = 1;
 
-static void cleanup()
-{
-    // Show cursor
-    printf("\033[?25h");
-    fflush(stdout);
-
-    keep_running = 0;
-}
-
 static void handle_sigint(int)
 {
-    cleanup();
+    keep_running = 0;
 }
 
 static void Init(void)
@@ -65,6 +56,9 @@ static void Init(void)
 
 static void Destroy(void)
 {
+    // Show cursor
+    printf("\033[?25h");
+    fflush(stdout);
 }
 
 static void Update(float dt)
@@ -96,7 +90,7 @@ int main(int argc, char **argv)
         Update(0.0f);
         if (!Draw())
         {
-            cleanup();
+            keep_running = 0;
         }
     }
 
