@@ -63,6 +63,15 @@ static void Destroy(void)
 
 static void Update(float dt)
 {
+    Camera *const cam = &scene.camera;
+
+    Vec3 const delta_eye = vec3_scale(dt, cam->right);
+    Vec3 const eye = vec3_add(cam->eye, delta_eye);
+    Vec3 const lookat = {.x = eye.x, .y = 0.0f, .z = 0.0f};
+    Vec3 const up = {.x = 0.0f, .y = 1.0f, .z = 0.0f};
+    float const fovy = deg2rad(60.0f);
+
+    camera_set(cam, eye, lookat, up, fovy);
 }
 
 static bool Draw(void)
@@ -87,7 +96,7 @@ int main(int argc, char **argv)
 
     while(keep_running)
     {
-        Update(0.0f);
+        Update(0.001f);
         if (!Draw())
         {
             keep_running = 0;
