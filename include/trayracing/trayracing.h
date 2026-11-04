@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #ifndef TRAYRACING_DECL
 #ifdef TRAYRACING_STATIC
