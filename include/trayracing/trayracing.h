@@ -23,15 +23,16 @@
 #endif
 
 typedef union Vec2 {
-    float v[2];
+    float coords[2];
 
     struct { float x, y; };
     struct { float r, g; };
     struct { float s, t; };
+    struct { float u, v; };
 } Vec2;
 
 typedef union Vec3 {
-    float v[3];
+    float coords[3];
 
     struct { float x, y, z; };
     struct { float r, g, b; };
