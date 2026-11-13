@@ -1,4 +1,6 @@
 # Top-level orchestrator: delegates build to per-app makefiles
+include common.mk
+
 .PHONY: all debug release clean screenshot legacy_opengl nogui ascii
 
 all: debug release screenshot

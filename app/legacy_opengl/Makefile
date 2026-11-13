@@ -20,7 +20,7 @@ $(BIN): $(OBJ)
 	@mkdir -p $(@D)
 	$(CC) -o $@ $^ $(LFLAGS_GL)
 
-$(OBJ): $(SRC) $(ROOT)/include/trayracing/trayracing.h
+$(OBJ): $(SRC) $(ROOT)/include/trayracing/trayracing.h $(GENERATED_HEADERS)
 	@mkdir -p $(@D)
 	$(CC) -o $@ -c $< $(CFLAGS) $(FLAGS) -Wa,-adhln -fverbose-asm -DSCREENSHOTS_FOLDER=\"$(SCREENSHOT_DIR)\" $(INCLUDE_DIR) > $@.s
 
