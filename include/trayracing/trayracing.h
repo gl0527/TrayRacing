@@ -69,10 +69,13 @@ typedef enum MaterialType
 
 typedef struct Material
 {
-    Vec3 ambient;
     Vec3 diffuse;
     Vec3 specular;
     float shininess;
+
+    Vec3 const *diffuseMap;
+    uint32_t diffuseMapWidth;
+    uint32_t diffuseMapHeight;
 
     Vec3 minReflectance;
     Vec3 refrIdx;
@@ -192,7 +195,7 @@ TRAYRACING_DECL Vec3 vec3_lerp(Vec3 a, Vec3 b, float t);
 TRAYRACING_DECL Camera camera_create(Vec3 eye, Vec3 lookat, Vec3 up, float fovy);
 TRAYRACING_DECL void camera_set(Camera *const camera, Vec3 eye, Vec3 lookat, Vec3 up, float fovy);
 
-TRAYRACING_DECL Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags);
+TRAYRACING_DECL Material material_create(Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags);
 
 TRAYRACING_DECL ResourcePool resourcepool_create(void);
 TRAYRACING_DECL void resourcepool_add_material(ResourcePool *const pResourcePool, Material material);
@@ -246,6 +249,7 @@ typedef struct Hit {
     float t;
     Vec3 position;
     Vec3 normal;
+    Vec2 uv;
     Material const *material;
 } Hit;
 
@@ -418,7 +422,7 @@ Vec3 vec3_sub(Vec3 a, Vec3 b)
 
 Vec3 vec3_scale(float f, Vec3 a)
 {
-    return LITERAL(Vec3){.x = f * a.x, .y = f * a.y, .z = f * a.z };
+    return LITERAL(Vec3){.x = f * a.x, .y = f * a.y, .z = f * a.z};
 }
 
 Vec3 vec3_mul(Vec3 a, Vec3 b)
@@ -433,9 +437,11 @@ float vec3_dot(Vec3 a, Vec3 b)
 
 Vec3 vec3_cross(Vec3 a, Vec3 b)
 {
-    return LITERAL(Vec3){  .x = a.y * b.z - a.z * b.y,
-                    .y = a.z * b.x - a.x * b.z,
-                    .z = a.x * b.y - a.y * b.x};
+    return LITERAL(Vec3){
+        .x = a.y * b.z - a.z * b.y,
+        .y = a.z * b.x - a.x * b.z,
+        .z = a.x * b.y - a.y * b.x,
+    };
 }
 
 float vec3_length_sqr(Vec3 a)
@@ -462,16 +468,15 @@ float vec3_dist(Vec3 a, Vec3 b)
 
 Vec3 vec3_reflect(Vec3 n, Vec3 v)
 {
-    return vec3_sub(v, vec3_scale(2.0f,  vec3_scale(vec3_dot(n, v),  n)));
+    return vec3_sub(v, vec3_scale(2.0f, vec3_scale(vec3_dot(n, v), n)));
 }
 
 Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx)
 {
-    // Use the average refractive index across channels
     float eta = (refrIdx.x + refrIdx.y + refrIdx.z) * 0.333333f;
-
     float cosa = vec3_dot(n, i);
-    if (cosa > 0) {
+
+    if (cosa > 0.0f) {
         cosa = -cosa;
         eta = 1.0f / eta;
     }
@@ -483,8 +488,7 @@ Vec3 vec3_refract(Vec3 n, Vec3 i, Vec3 refrIdx)
         return vec3_reflect(n, i);
     }
 
-    return vec3_add(vec3_scale(invEta, i),
-                    vec3_scale(invEta * cosa - sqrtf(discriminant), n));
+    return vec3_add(vec3_scale(invEta, i), vec3_scale(invEta * cosa - sqrtf(discriminant), n));
 }
 
 Vec3 vec3_lerp(Vec3 a, Vec3 b, float t)
@@ -517,21 +521,20 @@ static Ray camera_get_ray(Camera const *const camera, uint32_t x, uint32_t y, ui
     float const half_width = tan_half_fovy * aspect_ratio;
 
     Vec3 const pixel_pos = vec3_add(
-                vec3_add(vec3_add(camera->eye, camera->forward),
-                vec3_scale((2.0f * (x + xOffset) / screenWidth - 1.0f) * half_width, camera->right)),
-                vec3_scale((2.0f * (y + yOffset) / screenHeight - 1.0f) * tan_half_fovy, camera->up));
+        vec3_add(vec3_add(camera->eye, camera->forward),
+        vec3_scale((2.0f * (x + xOffset) / screenWidth - 1.0f) * half_width, camera->right)),
+        vec3_scale((2.0f * (y + yOffset) / screenHeight - 1.0f) * tan_half_fovy, camera->up));
 
     return LITERAL(Ray){camera->eye, vec3_norm(vec3_sub(pixel_pos, camera->eye))};
 }
 
-Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags)
+Material material_create(Vec3 diffuse, Vec3 specular, float shininess, Vec3 refrIdx, Vec3 absorption, uint8_t flags)
 {
-    Material material;
+    Material material = {0};
 
     material.flags = flags;
 
     if (flags & MT_ROUGH) {
-        material.ambient = ambient;
         material.diffuse = diffuse;
         material.specular = specular;
         material.shininess = shininess;
@@ -544,8 +547,8 @@ Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specular, float shinin
         Vec3 const refrIdxP1 = vec3_add(refrIdx, vec3_one());
         Vec3 const refrIdxM1 = vec3_sub(refrIdx, vec3_one());
         Vec3 const absorpCoeff2 = vec3_mul(material.absorpCoeff, material.absorpCoeff);
-        Vec3 const num = vec3_add(vec3_mul(refrIdxM1,  refrIdxM1), absorpCoeff2);
-        Vec3 const denom = vec3_add(vec3_mul(refrIdxP1,  refrIdxP1), absorpCoeff2);
+        Vec3 const num = vec3_add(vec3_mul(refrIdxM1, refrIdxM1), absorpCoeff2);
+        Vec3 const denom = vec3_add(vec3_mul(refrIdxP1, refrIdxP1), absorpCoeff2);
 
         material.minReflectance = LITERAL(Vec3){.r = num.r / denom.r, .g = num.g / denom.g, .b = num.b / denom.b};
     }
@@ -553,18 +556,33 @@ Material material_create(Vec3 ambient, Vec3 diffuse, Vec3 specular, float shinin
     return material;
 }
 
+static Vec3 material_sample_diffuse(Material const *const material, Vec2 uv)
+{
+    if (material == NULL || material->diffuseMap == NULL || material->diffuseMapWidth == 0 || material->diffuseMapHeight == 0) {
+        return material ? material->diffuse : vec3_zero();
+    }
+
+    float const u = clamp(uv.u, 0.0f, 1.0f);
+    float const v = clamp(uv.v, 0.0f, 1.0f);
+
+    uint32_t const x = (uint32_t)(u * (float)(material->diffuseMapWidth - 1));
+    uint32_t const y = (uint32_t)(v * (float)(material->diffuseMapHeight - 1));
+
+    return material->diffuseMap[y * material->diffuseMapWidth + x];
+}
+
 static Vec3 material_shade_phong_blinn(Material const *const material, Vec3 normal, Vec3 toEye, Vec3 toLight, Vec3 inRadiance)
 {
     Vec3 outRadiance = vec3_zero();
     float const NdotL = vec3_dot(normal, toLight);
-    if (NdotL < 0)
+    if (NdotL < 0.0f)
     {
         return outRadiance;
     }
     outRadiance = vec3_scale(NdotL, vec3_mul(inRadiance, material->diffuse));
     Vec3 const halfway = vec3_norm(vec3_add(toEye, toLight));
     float const NdotH = vec3_dot(normal, halfway);
-    if (NdotH < 0)
+    if (NdotH < 0.0f)
     {
         return outRadiance;
     }
@@ -583,10 +601,9 @@ static Material material_emerald(void)
 {
     Vec3 const diffuse = {.r = 0.07568f, .g = 0.61424f, .b = 0.07568f};
     Vec3 const specular = {.r = 0.633f, .g = 0.727811f, .b = 0.633f};
-    Vec3 const ambient = {.r = 0.0215f, .g = 0.1745f, .b = 0.02145f};
     float const shininess = 76.8f;
 
-    return material_create(ambient, diffuse, specular, shininess, vec3_zero(), vec3_zero(), MT_ROUGH);
+    return material_create(diffuse, specular, shininess, vec3_zero(), vec3_zero(), MT_ROUGH);
 }
 
 static Material material_gold(void)
@@ -594,7 +611,7 @@ static Material material_gold(void)
     Vec3 const n = {.r = 0.17055f, .g = 0.38442f, .b = 1.44250f};
     Vec3 const k = {.r = 3.61240f, .g = 2.41110f, .b = 1.83330f};
 
-    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE);
+    return material_create(vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE);
 }
 
 static Material material_glass(void)
@@ -602,7 +619,7 @@ static Material material_glass(void)
     Vec3 const n = {.r = 1.5f, .g = 1.5f, .b = 1.5f};
     Vec3 const k = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
 
-    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE | MT_REFRACTIVE);
+    return material_create(vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE | MT_REFRACTIVE);
 }
 
 static Material material_silver(void)
@@ -610,7 +627,7 @@ static Material material_silver(void)
     Vec3 const n = {.r = 0.051585f, .g = 0.057345f, .b = 0.045050f};
     Vec3 const k = {.r = 4.340000f, .g = 3.493800f, .b = 2.476400f};
 
-    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE);
+    return material_create(vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE);
 }
 
 static Material material_diamond(void)
@@ -618,7 +635,7 @@ static Material material_diamond(void)
     Vec3 const n = {.r = 2.410f, .g = 2.421f, .b = 2.435f};
     Vec3 const k = {.r = 0.0f, .g = 0.0f, .b = 0.0f};
 
-    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE | MT_REFRACTIVE);
+    return material_create(vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE | MT_REFRACTIVE);
 }
 
 static Material material_copper(void)
@@ -626,7 +643,17 @@ static Material material_copper(void)
     Vec3 const n = {.r = 0.27105f, .g = 0.67693f, .b = 1.31640f};
     Vec3 const k = {.r = 3.60920f, .g = 2.62480f, .b = 2.29210f};
 
-    return material_create(vec3_zero(), vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE);
+    return material_create(vec3_zero(), vec3_zero(), 0.0f, n, k, MT_REFLECTIVE);
+}
+
+static Vec2 sphere_uv(Vec3 position)
+{
+    Vec2 uv;
+
+    uv.u = 0.5f + atan2f(position.z, position.x) / (2.0f * M_PIf);
+    uv.v = 0.5f - asinf(clamp(position.y, -1.0f, 1.0f)) / M_PIf;
+
+    return uv;
 }
 
 static float sphere_intersect_t(Sphere const *const sphere, Ray const *const ray)
@@ -660,6 +687,7 @@ static Hit sphere_intersect(Sphere const *const sphere, Ray const *const ray, fl
     if (vec3_dot(ray->direction, hit.normal) > 0.0f) {
         hit.normal = vec3_inv(hit.normal);
     }
+    hit.uv = sphere_uv(vec3_norm(hit.normal));
     hit.material = sphere->material;
 
     return hit;
@@ -696,7 +724,6 @@ bool frame_save_to_stdout(Frame const *const frame)
 
     char const ramp[] = " .:-=+*#%@";
 
-    // Calculate ramp_max_index by ignoring the '\0' at the end of the string.
     uint8_t const ramp_max_index = sizeof(ramp) - 2;
 
     for (int32_t y = FRAME_HEIGHT - 1; y >= 0; --y)
@@ -709,7 +736,6 @@ bool frame_save_to_stdout(Frame const *const frame)
             float const g = clamp(pixel->g, 0.0f, 1.0f);
             float const b = clamp(pixel->b, 0.0f, 1.0f);
 
-            // Use the luminosity formula to calculate brightness.
             float const brightness = 0.299f * r + 0.587f * g + 0.114f * b;
 
             frame_string[index++] = ramp[(uint8_t)(ramp_max_index * brightness)];
@@ -718,11 +744,8 @@ bool frame_save_to_stdout(Frame const *const frame)
     }
     frame_string[index] = '\0';
 
-    // Move the cursor back to the top-left corner (0,0)
     printf("\033[H");
-
     printf("%s\n", frame_string);
-
     fflush(stdout);
 
     return true;
@@ -730,7 +753,6 @@ bool frame_save_to_stdout(Frame const *const frame)
 
 bool frame_save_to_file(Frame const *const frame)
 {
-    // Assemble output file name.
     static uint32_t counter = 0;
 
     if (counter > 999)
@@ -752,7 +774,6 @@ bool frame_save_to_file(Frame const *const frame)
             t->tm_sec,
             counter++);
 
-    // Open file.
     FILE* file = fopen(output_path, "wb");
 
     if (NULL == file)
@@ -761,10 +782,8 @@ bool frame_save_to_file(Frame const *const frame)
         return false;
     }
 
-    // Write meta data into file.
     fprintf(file, "P6\n%d %d\n255\n", FRAME_WIDTH, FRAME_HEIGHT);
 
-    // Write pixel data into file, from the top left pixel to the bottom right pixel.
     for (int32_t y = FRAME_HEIGHT - 1; y >= 0; --y)
     {
         for (int32_t x = 0; x < FRAME_WIDTH; ++x)
@@ -781,10 +800,9 @@ bool frame_save_to_file(Frame const *const frame)
         }
     }
 
-    // Close file.
     fclose(file);
 
-    printf("Screenshot is saved as \'%s\'.\n", output_path);
+    printf("Screenshot is saved as '%s'.\n", output_path);
 
     return true;
 }
@@ -839,7 +857,6 @@ static inline char glyph_character_map(char c)
         return -1;
     }
 
-    // Convert character to lower case.
     c |= 0x20;
 
     if (c >= 'a' && c <= 'z') {
@@ -865,13 +882,12 @@ void text_render(Frame *const frame, char const *text, Vec2 position, uint8_t si
 
             for (size_t i = 0; i < GLYPH_DATA_SIZE; i += 2)
             {
-                glyph_pixel_coords[i/2] =
-                    vec2_add(vec2_scale(size, LITERAL(Vec2){.x = glyph_normal_coords[i], .y = glyph_normal_coords[i+1]}), position);
+                glyph_pixel_coords[i/2] = vec2_add(vec2_scale(size, LITERAL(Vec2){.x = glyph_normal_coords[i], .y = glyph_normal_coords[i + 1]}), position);
             }
 
             for (size_t i = 0, n = GLYPH_POINT_COUNT - 1; i < n; ++i)
             {
-                line_render(frame, glyph_pixel_coords[i], glyph_pixel_coords[i+1], color, 1);
+                line_render(frame, glyph_pixel_coords[i], glyph_pixel_coords[i + 1], color, 1);
             }
         }
 
@@ -958,7 +974,7 @@ static Vec3 scene_raytrace(Scene const *const scene, Ray const *const ray, uint8
     }
 
     Hit const hit = scene_raycast(scene, ray);
-    if (hit.t < 0)
+    if (hit.t < 0.0f)
     {
         return scene->ambientLight;
     }
@@ -968,7 +984,10 @@ static Vec3 scene_raytrace(Scene const *const scene, Ray const *const ray, uint8
 
     if (hit.material->flags & MT_ROUGH)
     {
-        outRadiance = vec3_add(outRadiance, vec3_mul(hit.material->ambient, scene->ambientLight));
+        Vec3 const sampledDiffuse = material_sample_diffuse(hit.material, hit.uv);
+        Vec3 const ambient = vec3_scale(M_PIf, sampledDiffuse);
+        outRadiance = vec3_add(outRadiance, vec3_mul(ambient, scene->ambientLight));
+
         for (uint8_t i = 0, lightCount = scene->currentLightCount; i < lightCount; ++i)
         {
             Vec3 const toLight = vec3_norm(vec3_inv(scene->lights[i].direction));
